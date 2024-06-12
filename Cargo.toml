@@ -1,7 +1,24 @@
 [package]
 name = "ai-lab"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+readme = "README.org"
+authors = ["Felix Drees"]
+description = "GUI for annotating, training, and evaluating AI models, simplifying workflows for data scientists."
+repository = "https://github.com/felixbd/ai-lab"
+license = "GPL-3.0 license"
+# license-file = "LICENSE"
+keywords = ["ai", "ml", "gtk"]
+publish = false
+
+[badges]
+maintenance = { status = "actively-developed" }
+
+# [lints.rust]
+# unsafe_code = "forbid"
+
+# [lints.clippy]
+# enum_glob_use = "deny"
 
 [dependencies]
 gtk = { version = "0.4.7", package = "gtk4" }

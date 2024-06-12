@@ -1,3 +1,6 @@
+// <one line to give the program's name and a brief idea of what it does.>
+// Copyright (C) <year>  <name of author>
+
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Button};
 
@@ -19,8 +22,11 @@ fn build_ui(app: &Application) {
         .margin_end(12)
         .build();
 
+    let version = option_env!("CARGO_PKG_VERSION").unwrap_or("0.0.0");
+    let title = format!("example title - by: Felix D. - v{}", version);
+
     let window = ApplicationWindow::builder()
-        .title("example title")
+        .title(&title)
         .application(app)
         .child(&button)
         .build();

@@ -1,0 +1,97 @@
+# https://github.com/felixbd/ai-lab -*- mode: org; coding: utf-8; -*-
+# -----------------------------------------------------------------------------
+#+TITLE: AI Lab
+#+SUBTITLE: Annotator, Trainer and Evaluator (Rust GTK GUI App)
+#+AUTHOR: Felix Drees
+
+
+This repository contains a Rust-based graphical user interface (GUI) application
+built using GTK, designed to annotate, train, and evaluate AI algorithms and
+machine learning models. The app provides an intuitive and efficient workflow for 
+data scientists and AI enthusiasts, facilitating the entire process from data
+annotation to model evaluation.
+
+* Features
+
+- **Annotation Tool**: Easily annotate datasets with a user-friendly interface, 
+supporting various data types and formats.
+
+- **Training Module**: Train machine learning models with customizable
+parameters and monitor training progress in real-time.
+
+- **Evaluation Suite**: Evaluate trained models using different metrics and
+visualize performance results.
+
+- **User-Friendly Interface**: Leverage the power of GTK to provide a smooth and
+interactive user experience.
+
+- **Rust-Powered**: Enjoy the safety and performance benefits of Rust, ensuring 
+robust and efficient operations.
+
+
+* Getting Started
+
+1. **Clone the Repository**:
+   #+begin_src sh
+   git clone git@github.com:felixbd/ai-lab.git
+   cd ai-lab
+   #+end_src
+
+2. **Build the Project**:
+   #+begin_src sh
+   cargo build --release
+   #+end_src
+
+3. **Run the Application**:
+   #+begin_src sh
+   cargo run --release
+   #+end_src
+
+* Prerequisites
+
+- Rust and Cargo installed
+- GTK development libraries
+
+see: https://gtk-rs.org/
+
+see: https://gtk-rs.org/gtk4-rs/stable/latest/book/introduction.html
+
+
+* Installation
+
+Detailed installation instructions for various platforms are available in the
+[[file:INSTALL.org][INSTALL.org]] file.
+
+* Usage
+
+Refer to the [[file:USER_GUIDE.org][User Guide]] for a comprehensive guide on
+how to use the application effectively.
+
+* Contributing
+
+Contributions are welcome! Please see the
+[[file:CONTRIBUTING.org][CONTRIBUTING.org]] file for guidelines on how to
+contribute to this project.
+
+* License
+
+This project is licensed under the GNU GPLv3 License - see the
+[[file:LICENSE][LICENSE]] file for details.
+
+#+BEGIN_SRC
+<one line to give the program's name and a brief idea of what it does.>
+Copyright (C) <year>  <name of author>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#+END_SRC

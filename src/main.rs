@@ -76,8 +76,11 @@ fn build_ui(app: &Application) {
     let page5_label = Label::new(Some("Postprocessing"));
     notebook.append_page(&page5_label, Some(&Label::new(Some("Postprocessing"))));
 
-    let page6_label = Label::new(Some("Evaluation"));
-    notebook.append_page(&page6_label, Some(&Label::new(Some("Evaluation"))));
+    let page6_label = Label::new(Some("Prediction"));
+    notebook.append_page(&page6_label, Some(&Label::new(Some("Prediction"))));
+
+    let page7_label = Label::new(Some("Evaluation"));
+    notebook.append_page(&page7_label, Some(&Label::new(Some("Evaluation"))));
 
     // ---------------------------------------------------------------------------------------------
     

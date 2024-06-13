@@ -4,7 +4,7 @@
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Button, Label, Notebook, Box};
 
-fn main() {
+fn main() { // -> glib::ExitCode {
     let app = Application::builder()
         .application_id("example.ai-lab")
         .build();
@@ -56,10 +56,39 @@ fn build_ui(app: &Application) {
     // add button to container
     // -----------------------
     let button = Button::builder()
-        .label("Click Me")
+        .label("select workspace")
         .build();
 
     container.append(&button);
+
+    // Connect button click event to show file chooser dialog
+    button.connect_clicked(move |_| {
+        // Create a new file chooser dialog
+        let dialog = gtk::FileChooserDialog::builder()
+            .title("Select a Directory")
+            .action(gtk::FileChooserAction::Open)
+            .build();
+
+        dialog.add_buttons(&[
+            ("Cancel", gtk::ResponseType::Cancel),
+            ("Select", gtk::ResponseType::Accept),
+        ]);
+
+        // Connect response event to handle user's selection
+        dialog.connect_response(|dialog, response| {
+            if response == gtk::ResponseType::Accept {
+                if let Some(folder) = dialog.file() {
+                    println!("Selected directory: {}", folder.path().unwrap().display());
+                }
+            }
+            dialog.close();
+        });
+
+        // Show the dialog
+        dialog.show();
+    });
+
+    container.append(&gtk::Label::builder().label("or\ncreate a new workspace (todo)").build());
 
     notebook.append_page(&container, Some(&Label::new(Some("Workspace"))));
     // === END Workspace sub page ==================================================================

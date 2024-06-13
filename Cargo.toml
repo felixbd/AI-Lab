@@ -14,8 +14,8 @@ publish = false
 [badges]
 maintenance = { status = "actively-developed" }
 
-# [lints.rust]
-# unsafe_code = "forbid"
+[lints.rust]
+unsafe_code = "forbid"
 
 # [lints.clippy]
 # enum_glob_use = "deny"

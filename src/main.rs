@@ -4,9 +4,18 @@
 use gtk::prelude::*;
 use gtk::{
     Application, ApplicationWindow, Box, Button, ColorButton, Dialog, DropDown, Entry, Label,
-    Notebook, Orientation, ResponseType,
+Notebook, Orientation, ResponseType,
 };
 
+/// Sets up and runs the main application.
+///
+/// This function initializes an application with a specific ID,
+/// connects its activation signal to `build_ui`, and runs the application loop.
+///
+/// # Returns
+///
+/// Returns a `glib::ExitCode` indicating the exit status of the application.
+///
 fn main() {
     // -> glib::ExitCode {
     let app = Application::builder()
@@ -17,6 +26,15 @@ fn main() {
     app.run();
 }
 
+/// Builds the user interface for the application.
+///
+/// This function constructs the main application window with a notebook widget
+/// containing several pages for different functionalities related to AI Lab tasks.
+///
+/// # Arguments
+///
+/// * `app` - The application context to which the UI is bound.
+///
 fn build_ui(app: &Application) {
     let app_name = option_env!("CARGO_PKG_NAME").unwrap_or("AI Lab");
     let version = option_env!("CARGO_PKG_VERSION").unwrap_or("0.0.0");

@@ -1,0 +1,35 @@
+# https://github.com/felixbd/ai-lab -*- mode: org; coding: utf-8; -*-
+# -----------------------------------------------------------------------------
+#+TITLE: AI Lab - contributing guide
+
+* Contributing to AI Lab
+
+Before contributing to AI Lab, please read the following guidelines.
+
+It is a good idea to create a issue before starting to work on a feature or a bug fix.
+This way, you can get feedback from the maintainers and other contributors.
+
+If the issue is wellcome, you can fork the repository and start working on it.
+
+When you are ready to submit your changes, create a pull request.
+Please use a separate branch for each pull request and make sure that your changes are well tested.
+
+
+** Code style
+
+The ~rust~ code should be formatted using the `rustfmt` tool.
+You can run `cargo fmt` to format the code.
+
+
+** Documentation
+
+Please make sure that your code is well documented.
+You can run `cargo doc --no-deps` to generate the documentation.
+
+If necessary, update the README file or any other ~.org~ file.
+
+
+** Changelog
+
+Finally, make sure to update the CHANGELOG file with a description of your changes
+and update the ~Cargo.toml~ authors list.

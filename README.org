@@ -13,36 +13,36 @@ annotation to model evaluation.
 
 * Features
 
-- **Annotation Tool**: Easily annotate datasets with a user-friendly interface, 
+- *Annotation Tool*: Easily annotate datasets with a user-friendly interface,
 supporting various data types and formats.
 
-- **Training Module**: Train machine learning models with customizable
+- *Training Module*: Train machine learning models with customizable
 parameters and monitor training progress in real-time.
 
-- **Evaluation Suite**: Evaluate trained models using different metrics and
+- *Evaluation Suite*: Evaluate trained models using different metrics and
 visualize performance results.
 
-- **User-Friendly Interface**: Leverage the power of GTK to provide a smooth and
+- *User-Friendly Interface*: Leverage the power of GTK to provide a smooth and
 interactive user experience.
 
-- **Rust-Powered**: Enjoy the safety and performance benefits of Rust, ensuring 
+- *Rust-Powered*: Enjoy the safety and performance benefits of Rust, ensuring
 robust and efficient operations.
 
 
 * Getting Started
 
-1. **Clone the Repository**:
+1. *Clone the Repository*:
    #+begin_src sh
    git clone git@github.com:felixbd/ai-lab.git
    cd ai-lab
    #+end_src
 
-2. **Build the Project**:
+2. *Build the Project*:
    #+begin_src sh
    cargo build --release
    #+end_src
 
-3. **Run the Application**:
+3. *Run the Application*:
    #+begin_src sh
    cargo run --release
    #+end_src
@@ -64,7 +64,7 @@ Detailed installation instructions for various platforms are available in the
 
 * Usage
 
-Refer to the [[file:USER_GUIDE.org][User Guide]] for a comprehensive guide on
+Refer to the [[file:USER_GUIDE.org][USER_GUIDE.org]] for a comprehensive guide on
 how to use the application effectively.
 
 * Contributing

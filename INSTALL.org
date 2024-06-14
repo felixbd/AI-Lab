@@ -1,0 +1,56 @@
+# https://github.com/felixbd/ai-lab -*- mode: org; coding: utf-8; -*-
+# -----------------------------------------------------------------------------
+#+TITLE: AI Lab - installation guide
+
+
+* Introduction
+
+This document describes how to install the AI Lab software on a Linux system.
+
+
+* Prerequisites
+
+The software is officially supported on GNU/Linux (Debian based distributions) and NixOS.
+It should work on other distributions as well, but it is not officially supported.
+Schuld also works on Windows and MacOS, but the installation process is different.
+
+* Required software packages / dependencies / libraries
+
+For the GUI, the following packages are required:
+
+- GTK4
+
+for linux see: https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_linux.html
+
+for macos see: https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_macos.html
+
+for windows see: https://gtk-rs.org/gtk4-rs/stable/latest/book/installation_windows.html
+
+To build the rust project, you need to install the following packages:
+
+- cargo
+
+
+* Installation
+
+** Debian based distributions
+
+#+BEGIN_SRC sh
+# to install the required packages
+sudo apt install libgtk-4-dev build-essential
+
+# to install rust / cargo
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+# sudo apt install rustup
+#+END_SRC
+
+** NixOS
+
+#+BEGIN_SRC sh
+nix-shell
+#+END_SRC
+
+
+* Building the project (from source)
+
+Refer to the README.md file in the project root directory.

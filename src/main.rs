@@ -1,12 +1,14 @@
 // ai lab - GUI for annotating, training, and evaluating AI models, simplifying workflows
-// Copyright (C) 2023  Felix Drees
+// Copyright (C) 2023  Felix Drees - GNU General Public License v3.0
 
 use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Button, Label, Notebook, Box,
-          DropDown, ColorButton, Dialog, Entry, Orientation, ResponseType};
+use gtk::{
+    Application, ApplicationWindow, Box, Button, ColorButton, Dialog, DropDown, Entry, Label,
+    Notebook, Orientation, ResponseType,
+};
 
-
-fn main() { // -> glib::ExitCode {
+fn main() {
+    // -> glib::ExitCode {
     let app = Application::builder()
         .application_id("example.ai-lab")
         .build();
@@ -50,9 +52,8 @@ fn build_ui(app: &Application) {
     let page7_label = Label::new(Some("Evaluation"));
     notebook.append_page(&page7_label, Some(&Label::new(Some("Evaluation"))));
 
-    window.show();  // window.present();
+    window.show(); // window.present();
 }
-
 
 fn workspace_ui() -> gtk::Box {
     // container for ui elements
@@ -85,9 +86,7 @@ fn workspace_ui() -> gtk::Box {
 
     // add button to container
     // -----------------------
-    let select_workspace_btn = Button::builder()
-        .label("select workspace")
-        .build();
+    let select_workspace_btn = Button::builder().label("select workspace").build();
 
     // Connect button click event to show file chooser dialog
     select_workspace_btn.connect_clicked(move |_| {
@@ -145,7 +144,7 @@ fn workspace_ui() -> gtk::Box {
 
     let problem_kind_dd = DropDown::new(
         Some(&gtk::StringList::new(problem_types.as_slice())),
-        Some(expression)
+        Some(expression),
     );
     container_right.append(&problem_kind_dd);
 
@@ -158,7 +157,7 @@ fn workspace_ui() -> gtk::Box {
 
     let data_kind_dd = DropDown::new(
         Some(&gtk::StringList::new(data_types.as_slice())),
-        Some(expression2)
+        Some(expression2),
     );
     container_right.append(&data_kind_dd);
 
@@ -203,8 +202,13 @@ fn workspace_ui() -> gtk::Box {
 
     problem_kind_dd.connect_notify_local(Some("selected-item"), move |drop_down, _| {
         if let Some(selected_item) = drop_down.selected_item() {
-            add_class_btn.set_visible("Classification (Predicting Data)" ==
-                selected_item.downcast_ref::<gtk::StringObject>().unwrap().string());
+            add_class_btn.set_visible(
+                "Classification (Predicting Data)"
+                    == selected_item
+                        .downcast_ref::<gtk::StringObject>()
+                        .unwrap()
+                        .string(),
+            );
         }
     });
 
@@ -220,7 +224,7 @@ fn workspace_ui() -> gtk::Box {
     container_right.append(&save_btn);
 
     save_btn.connect_clicked(move |_| {
-       println!("[WARNING] saving config not jet implemented");
+        println!("[WARNING] saving config not jet implemented");
     });
 
     workspace_main_container.append(&container_right);

@@ -18,13 +18,13 @@ Please use a separate branch for each pull request and make sure that your chang
 ** Code style
 
 The ~rust~ code should be formatted using the `rustfmt` tool.
-You can run `cargo fmt` to format the code.
+You can run ~cargo fmt~ to format the code.
 
 
 ** Documentation
 
 Please make sure that your code is well documented.
-You can run `cargo doc --no-deps` to generate the documentation.
+You can run ~cargo doc --no-deps~ to generate the documentation.
 
 If necessary, update the README file or any other ~.org~ file.
 

@@ -4,6 +4,7 @@
 #+SUBTITLE: Annotator, Trainer and Evaluator (Rust GTK GUI App)
 #+AUTHOR: Felix Drees
 
+see: https://felixbd.github.io/ai-lab/ai_lab/index.html
 
 This repository contains a Rust-based graphical user interface (GUI) application
 built using GTK, designed to annotate, train, and evaluate AI algorithms and

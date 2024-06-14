@@ -2,7 +2,9 @@
 // Copyright (C) 2023  Felix Drees
 
 use gtk::prelude::*;
-use gtk::{Application, ApplicationWindow, Button, Label, Notebook, Box, DropDown};
+use gtk::{Application, ApplicationWindow, Button, Label, Notebook, Box,
+          DropDown, ColorButton, Dialog, Entry, Orientation, ResponseType};
+
 
 fn main() { // -> glib::ExitCode {
     let app = Application::builder()
@@ -55,11 +57,11 @@ fn build_ui(app: &Application) {
 fn workspace_ui() -> gtk::Box {
     // container for ui elements
     // -------------------------
-    let container = Box::builder()
+    let workspace_main_container = Box::builder()
         .orientation(gtk::Orientation::Horizontal)
-        .margin_top(24)
+        .margin_top(4)
         .margin_bottom(24)
-        .margin_start(24)
+        .margin_start(4)
         .margin_end(24)
         .halign(gtk::Align::Center)
         .valign(gtk::Align::Center)
@@ -83,16 +85,15 @@ fn workspace_ui() -> gtk::Box {
 
     // add button to container
     // -----------------------
-    let button = Button::builder()
+    let select_workspace_btn = Button::builder()
         .label("select workspace")
         .build();
 
-
     // Connect button click event to show file chooser dialog
-    button.connect_clicked(move |_| {
+    select_workspace_btn.connect_clicked(move |_| {
         // Create a new file chooser dialog
         let dialog = gtk::FileChooserDialog::builder()
-            .title("Select a workspace .yaml file")
+            .title("Select a workspace .toml file")
             .action(gtk::FileChooserAction::Open)
             .build();
 
@@ -114,10 +115,10 @@ fn workspace_ui() -> gtk::Box {
         // Show the dialog
         dialog.show();
     });
-    container_left.append(&button);
-    container.append(&container_left);
+    container_left.append(&select_workspace_btn);
+    workspace_main_container.append(&container_left);
 
-    container.append(&gtk::Label::builder().label("or").build());
+    workspace_main_container.append(&gtk::Label::builder().label("or").build());
 
     let container_right = Box::builder()
         .orientation(gtk::Orientation::Vertical)
@@ -142,22 +143,87 @@ fn workspace_ui() -> gtk::Box {
         "string",
     );
 
-    let drop_down = DropDown::new(Some(&gtk::StringList::new(problem_types.as_slice())),
-                                  Some(expression));
-    // drop_down.set_enable_search(true);
-    // drop_down.set_search_match_mode(gtk::StringFilterMatchMode::Substring);
+    let problem_kind_dd = DropDown::new(
+        Some(&gtk::StringList::new(problem_types.as_slice())),
+        Some(expression)
+    );
+    container_right.append(&problem_kind_dd);
 
-    container_right.append(&drop_down);
+    let data_types = vec!["sequential", "images"];
+    let expression2 = gtk::PropertyExpression::new(
+        gtk::StringObject::static_type(),
+        None::<gtk::Expression>,
+        "string",
+    );
 
-    // TODO(felix): fi the user selected classification, add a section where the user
-    //  can select what classes to classify
+    let data_kind_dd = DropDown::new(
+        Some(&gtk::StringList::new(data_types.as_slice())),
+        Some(expression2)
+    );
+    container_right.append(&data_kind_dd);
 
-    // TODO(felix): add a text filed for a filename to write the workspace config to
+    let add_class_btn = Button::with_label("Add class to predict");
+    // add_class_btn.set_visible(false); // Initially hidden
+    container_right.append(&add_class_btn);
+
+    add_class_btn.connect_clicked(move |_| {
+        let dialog = Dialog::new();
+        dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
+        dialog.set_default_size(400, 200);
+
+        let content_area = dialog.content_area();
+        let vbox = Box::new(Orientation::Vertical, 15);
+
+        let name_entry = Entry::new();
+        name_entry.set_placeholder_text(Some("Enter label class name"));
+        let color_button = ColorButton::new();
+
+        vbox.append(&Label::new(Some("Label Class Name:")));
+        vbox.append(&name_entry);
+        vbox.append(&Label::new(Some("Select Color:")));
+        vbox.append(&color_button);
+
+        content_area.append(&vbox);
+
+        dialog.add_button("Cancel", ResponseType::Cancel);
+        dialog.add_button("OK", ResponseType::Ok);
+
+        dialog.connect_response(move |dialog, response| {
+            if response == ResponseType::Ok {
+                let name = name_entry.text();
+                let color = color_button.rgba();
+                println!("Label Class Name: {}", name);
+                println!("Selected Color: {:?}", color);
+            }
+            dialog.close();
+        });
+
+        dialog.show();
+    });
+
+    problem_kind_dd.connect_notify_local(Some("selected-item"), move |drop_down, _| {
+        if let Some(selected_item) = drop_down.selected_item() {
+            add_class_btn.set_visible("Classification (Predicting Data)" ==
+                selected_item.downcast_ref::<gtk::StringObject>().unwrap().string());
+        }
+    });
 
     // TODO(felix): add a selection for data directory selection
     //  maybe also add a directory for the labels
 
-    container.append(&container_right);
+    container_right.append(&Label::new(Some("Save config to .toml file:")));
+    let config_filename_entry = Entry::new();
+    config_filename_entry.set_placeholder_text(Some("example_workspace.toml"));
+    container_right.append(&config_filename_entry);
 
-    container
+    let save_btn = Button::with_label("save config");
+    container_right.append(&save_btn);
+
+    save_btn.connect_clicked(move |_| {
+       println!("[WARNING] saving config not jet implemented");
+    });
+
+    workspace_main_container.append(&container_right);
+
+    workspace_main_container
 }

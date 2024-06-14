@@ -1,0 +1,18 @@
+# https://github.com/felixbd/ai-lab -*- mode: org; coding: utf-8; -*-
+# -----------------------------------------------------------------------------
+#+TITLE: Changelog for =AI Lab=
+
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [[https://keepachangelog.com/en/1.0.0/][Keep a Changelog]],
+and this project adheres to
+
+https://doc.rust-lang.org/cargo/reference/manifest.html#the-version-field
+https://semver.org/
+
+# [[https://pvp.haskell.org/][the Haskell Package Versioning Policy]].
+
+** Unreleased
+
+** 0.1.0 - YYYY-MM-DD

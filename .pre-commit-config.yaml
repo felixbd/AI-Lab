@@ -1,11 +1,37 @@
 # see: https://pre-commit.com
 # see: https://pre-commit.com/hooks.html
+# see: https://github.com/doublify/pre-commit-rust
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v3.2.0
     hooks:
-    - id: trailing-whitespace
-    - id: end-of-file-fixer
-    - id: check-yaml
-    - id: check-added-large-files
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      # - id: check-byte-order-marker
+      # - id: check-case-conflict
+      # - id: check-merge-conflict
+      # - id: check-symlinks
+      - id: mixed-line-ending
+
+  - repo: https://github.com/pre-commit/pre-commit
+    rev: v2.5.1
+    hooks:
+    - id: validate_manifest
+
+  # - repo: https://github.com/doublify/pre-commit-rust
+  #  rev: master
+  #  hooks:
+      # - id: fmt
+      #  args: ['--verbose', '--edition', '2018', '--']
+      # - id: cargo-check
+
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: Cargo Fmt
+        entry: cargo fmt --all -- --check
+        language: rust
+        types: [rust]

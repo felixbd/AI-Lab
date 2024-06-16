@@ -2,7 +2,8 @@
 // Copyright (C) 2023  Felix Drees - GNU General Public License v3.0
 
 use gtk::prelude::*;
-use gtk::{Box, Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
+
+use gtk::{Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
 use serde::{Deserialize, Serialize};
 
@@ -11,18 +12,21 @@ use std::fs;
 
 // --- helper funcs and structs for workspace ui --------------------------------------------------
 
+/// some example struct for the config
 #[derive(Serialize, Deserialize, Debug)]
 struct Config {
     title: String,
     owner: Owner,
 }
 
+/// even more example structs for the config
 #[derive(Serialize, Deserialize, Debug)]
 struct Owner {
     name: String,
-    dob: String, // Use appropriate type based on your TOML structure
+    dob: String,
 }
 
+/*
 fn load_config(file_path: &str) -> Result<Config, Box<dyn Error>> {
     let contents = fs::read_to_string(file_path)?;
     let config: Config = toml::from_str(&contents)?;
@@ -33,17 +37,37 @@ fn modify_config(config: &mut Config) {
     config.title = "New Title".to_string();
     config.owner.name = "New Owner".to_string();
 }
+*/
 
+/// # save workspace configs to .toml file
+///
+/// where:
+/// - `file_path` is the name of the .toml file to which the config will be written
+/// - `config` is the given config as a Config struct
+///
+/// returns:
+///     Result
 fn save_config(file_path: &str, config: &Config) -> Result<(), Box<dyn Error>> {
     let toml_string = toml::to_string(config)?;
     fs::write(file_path, toml_string)?;
     Ok(())
 }
 
+/// # generate config
+///
+/// generates config with default values, where all params are optional
+///
+/// params:
+///     - `name` is the name of the config
+///     - `dob` is the date of birth
+///     - `title` is the title of the config
+///
+/// returns:
+///     Config struct
 fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -> Config {
     let owner = Owner {
         name: name.unwrap_or("Default Name").to_string(),
-        dob: dob.unwrap_or("2000-01-01").to_string(), // Use a default date
+        dob: dob.unwrap_or("2000-01-01").to_string(),
     };
 
     Config {
@@ -62,7 +86,7 @@ fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -
 pub fn workspace_ui() -> gtk::Box {
     // container for ui elements
     // -------------------------
-    let workspace_main_container = Box::builder()
+    let workspace_main_container = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .margin_top(4)
         .margin_bottom(24)
@@ -73,7 +97,7 @@ pub fn workspace_ui() -> gtk::Box {
         .spacing(24)
         .build();
 
-    let container_left = Box::builder()
+    let container_left = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(24)
         .build();
@@ -123,7 +147,7 @@ pub fn workspace_ui() -> gtk::Box {
 
     workspace_main_container.append(&gtk::Label::builder().label("or").build());
 
-    let container_right = Box::builder()
+    let container_right = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(24)
         .build();
@@ -175,7 +199,7 @@ pub fn workspace_ui() -> gtk::Box {
         dialog.set_default_size(400, 200);
 
         let content_area = dialog.content_area();
-        let vbox = Box::new(Orientation::Vertical, 15);
+        let vbox = gtk::Box::new(Orientation::Vertical, 15);
 
         let name_entry = Entry::new();
         name_entry.set_placeholder_text(Some("Enter label class name"));
@@ -216,9 +240,6 @@ pub fn workspace_ui() -> gtk::Box {
         }
     });
 
-    // TODO(felix): add a selection for data directory selection
-    //  maybe also add a directory for the labels
-
     container_right.append(&Label::new(Some("Save config to .toml file:")));
     let config_filename_entry = Entry::new();
     config_filename_entry.set_placeholder_text(Some("example_workspace.toml"));
@@ -228,7 +249,23 @@ pub fn workspace_ui() -> gtk::Box {
     container_right.append(&save_btn);
 
     save_btn.connect_clicked(move |_| {
-        println!("[WARNING] saving config not jet implemented");
+        let conf_name: Option<&str> = Option::from("name");
+        let conf_dob: Option<&str> = Option::from("01.01.2024");
+        let conf_title: Option<&str> = Option::from("ai lab config title");
+        let workspace_configs = generate_config(conf_name, conf_dob, conf_title);
+        let config_file_name = config_filename_entry.text().to_string();
+
+        // if the filename is not empty and ends with .toml
+        if config_file_name.is_empty() || !config_file_name.ends_with(".toml") {
+            // TODO(felix): add popup warning via gtk
+            println!(
+                "[WARNING] configs not saved - no filename given: {}",
+                config_file_name
+            );
+        } else {
+            save_config(&config_file_name, &workspace_configs).unwrap();
+            println!("[INFO] saved config to file: {}", config_file_name);
+        }
     });
 
     workspace_main_container.append(&container_right);

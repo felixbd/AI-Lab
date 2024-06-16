@@ -22,7 +22,7 @@ run:
 
 clean:
 	cargo clean
-	rm -fr ./docs/
+	# rm -fr ./docs/
 
 test:
 	cargo test
@@ -32,7 +32,8 @@ checkstyle:
 
 doc:
 	cargo doc --no-deps
-	cp -r ./target/doc/ ./docs/  # for github pages
+	# rm -fr ./docs/
+	# cp -r ./target/doc/ ./docs/  # for github pages
 
 # Check for xdg-open and open doc
 .PHONY: open_docs

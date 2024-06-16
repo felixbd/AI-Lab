@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["build_ui","main"],"mod":["workspace_ui"]};

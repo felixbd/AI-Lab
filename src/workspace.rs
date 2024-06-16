@@ -4,6 +4,56 @@
 use gtk::prelude::*;
 use gtk::{Box, Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
+use serde::{Deserialize, Serialize};
+
+use std::error::Error;
+use std::fs;
+
+// --- helper funcs and structs for workspace ui --------------------------------------------------
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Config {
+    title: String,
+    owner: Owner,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Owner {
+    name: String,
+    dob: String, // Use appropriate type based on your TOML structure
+}
+
+fn load_config(file_path: &str) -> Result<Config, Box<dyn Error>> {
+    let contents = fs::read_to_string(file_path)?;
+    let config: Config = toml::from_str(&contents)?;
+    Ok(config)
+}
+
+fn modify_config(config: &mut Config) {
+    config.title = "New Title".to_string();
+    config.owner.name = "New Owner".to_string();
+}
+
+fn save_config(file_path: &str, config: &Config) -> Result<(), Box<dyn Error>> {
+    let toml_string = toml::to_string(config)?;
+    fs::write(file_path, toml_string)?;
+    Ok(())
+}
+
+fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -> Config {
+    let owner = Owner {
+        name: name.unwrap_or("Default Name").to_string(),
+        dob: dob.unwrap_or("2000-01-01").to_string(), // Use a default date
+    };
+
+    Config {
+        title: title.unwrap_or("Default Title").to_string(),
+        owner: owner,
+    }
+}
+
+// --- end helper ---------------------------------------------------------------------------------
+
 ///
 /// Workspace UI
 ///

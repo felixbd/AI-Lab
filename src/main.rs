@@ -4,8 +4,8 @@
 use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Label, Notebook};
 
-mod workspace_ui;
-use workspace_ui::workspace_ui;
+mod workspace;
+use workspace::workspace_ui;
 
 /// Sets up and runs the main application.
 ///

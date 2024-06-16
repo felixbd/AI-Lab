@@ -21,4 +21,9 @@ unsafe_code = "forbid"
 # enum_glob_use = "deny"
 
 [dependencies]
+# GUI
 gtk = { version = "0.4.7", package = "gtk4" }
+
+# parsing and serialization toml config files
+toml = "0.5.9"
+serde = { version = "1.0", features = ["derive"] }

@@ -108,14 +108,18 @@ fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -
 ///
 /// This function will panic if the top-level widget is not of type `ApplicationWindow`
 /// and cannot be downcasted.
-/*fn get_toplevel_window(widget: &impl IsA<gtk::Widget>) -> Option<ApplicationWindow> {
-    let toplevel = widget.get_toplevel();  // FIXME(all): get toplevel dose not exist?!?
+fn get_toplevel_window(_widget: &impl IsA<gtk::Widget>) -> Option<ApplicationWindow> {
+    // FIXME(all): .get_toplevel dose not exist?!?
+    /*
+    let toplevel = widget.get_toplevel();
     if toplevel.is::<ApplicationWindow>() {
         Some(toplevel.downcast::<ApplicationWindow>().unwrap())
     } else {
         None
     }
-}*/
+    */
+    None
+}
 
 /// Displays an error message dialog with an optional custom title and message.
 ///
@@ -194,34 +198,28 @@ fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -
 ///
 /// This function does not panic. If the top-level `ApplicationWindow` cannot be found,
 /// the function will simply print an error message to the console.
-// fn show_error_message(parent: &impl IsA<gtk::Widget>, title: Option<&str>, message: Option<&str>) {
-fn show_error_message(title: Option<&str>, message: Option<&str>) {
+fn show_error_message(parent: &impl IsA<gtk::Widget>, title: Option<&str>, message: Option<&str>) {
     let dialog_title = title.unwrap_or("Error");
     let dialog_message = message.unwrap_or("An error has occurred!");
 
-    // if let Some(toplevel) = get_toplevel_window(parent) {
+    // note: if the toplevel is not, it's not a critical error but would be nicer if its some
+    let toplevel: Option<ApplicationWindow> = get_toplevel_window(parent);
+
     let dialog = MessageDialog::new(
-        None::<&ApplicationWindow>, //Some(&parent), // Set the parent window
-        gtk::DialogFlags::empty(),  // No special flags
-        MessageType::Error,         // Type of the message
-        gtk::ButtonsType::Ok,       // Buttons to display
-        dialog_message,             // Message text
+        toplevel.as_ref(),         // Set the parent window (might be None)
+        gtk::DialogFlags::empty(), // No special flags
+        MessageType::Error,        // Type of the message
+        gtk::ButtonsType::Ok,      // Buttons to display
+        dialog_message,            // Message text
     );
 
-    // Set the dialog title
     dialog.set_title(Option::from(dialog_title));
 
-    // Connect the response signal to close the dialog when a response is received
     dialog.connect_response(|dialog, _| {
         dialog.close();
     });
 
-    // Show the dialog
     dialog.show();
-    /*} else {
-        println!("[ERROR] show_error_message: Failed to find the top-level window.");
-        // panic!("Aaaaahhhhh!!");
-    }*/
 }
 
 // --- end helper ---------------------------------------------------------------------------------
@@ -396,29 +394,31 @@ pub fn workspace_ui() -> GtkBox {
     let save_btn = Button::with_label("save config");
     container_right.append(&save_btn);
 
-    // save_btn.connect_clicked(gtk::glib::clone!(@strong workspace_main_container => move |_| {
-    save_btn.connect_clicked(move |_| {
-        let conf_name: Option<&str> = Option::from("name");
-        let conf_dob: Option<&str> = Option::from("01.01.2024");
-        let conf_title: Option<&str> = Option::from("ai lab config title");
-        let workspace_configs = generate_config(conf_name, conf_dob, conf_title);
-        let config_file_name = config_filename_entry.text().to_string();
+    save_btn.connect_clicked(
+        gtk::glib::clone!(@strong workspace_main_container => move |_| {
+            let conf_name: Option<&str> = Option::from("name");
+            let conf_dob: Option<&str> = Option::from("01.01.2024");
+            let conf_title: Option<&str> = Option::from("ai lab config title");
+            let workspace_configs = generate_config(conf_name, conf_dob, conf_title);
+            let config_file_name = config_filename_entry.text().to_string();
 
-        // if the filename is not empty and ends with .toml
-        if config_file_name.is_empty() || !config_file_name.ends_with(".toml") {
-            println!(
-                "[WARNING] configs not saved - no filename given: {}",
-                config_file_name
-            );
-            show_error_message(
-                Option::from("WORKSPACE ERROR"),
-                Option::from("No config >loaded< or >created and saved<"),
-            );
-        } else {
-            save_config(&config_file_name, &workspace_configs).unwrap();
-            println!("[INFO] saved config to file: {}", config_file_name);
-        }
-    });
+            // if the filename is not empty and ends with .toml
+            if config_file_name.is_empty() || !config_file_name.ends_with(".toml") {
+                println!(
+                    "[WARNING] configs not saved - no filename given: {}",
+                    config_file_name
+                );
+                show_error_message(
+                    &workspace_main_container,
+                    Option::from("WORKSPACE ERROR"),
+                    Option::from("No config >loaded< or >created and saved<"),
+                );
+            } else {
+                save_config(&config_file_name, &workspace_configs).unwrap();
+                println!("[INFO] saved config to file: {}", config_file_name);
+            }
+        }),
+    );
 
     workspace_main_container.append(&container_right);
 

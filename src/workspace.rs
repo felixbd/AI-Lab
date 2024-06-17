@@ -3,6 +3,7 @@
 
 use gtk::prelude::*;
 
+use gtk::{ApplicationWindow, Box as GtkBox, MessageDialog, MessageType};
 use gtk::{Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
 use serde::{Deserialize, Serialize};
@@ -72,8 +73,155 @@ fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -
 
     Config {
         title: title.unwrap_or("Default Title").to_string(),
-        owner: owner,
+        owner, // owner: owner,
     }
+}
+
+/// Retrieves the top-level `ApplicationWindow` for a given widget.
+///
+/// This function traverses the widget hierarchy to find the top-level
+/// `ApplicationWindow` associated with the provided widget. This is useful
+/// for setting the transient parent of dialogs, ensuring they are properly
+/// associated with their parent window.
+///
+/// # Arguments
+///
+/// * `widget` - A reference to any widget implementing the `IsA<Widget>` trait.
+///
+/// # Returns
+///
+/// An `Option<ApplicationWindow>` which is `Some` if the top-level window
+/// is found, or `None` if no `ApplicationWindow` is found in the hierarchy.
+///
+/// # Example
+///
+/// ```
+/// let toplevel_window = get_toplevel_window(&my_widget);
+/// if let Some(window) = toplevel_window {
+///     // Use the window as the transient parent for a dialog
+/// } else {
+///     println!("Top-level window not found.");
+/// }
+/// ```
+///
+/// # Panics
+///
+/// This function will panic if the top-level widget is not of type `ApplicationWindow`
+/// and cannot be downcasted.
+/*fn get_toplevel_window(widget: &impl IsA<gtk::Widget>) -> Option<ApplicationWindow> {
+    let toplevel = widget.get_toplevel();  // FIXME(all): get toplevel dose not exist?!?
+    if toplevel.is::<ApplicationWindow>() {
+        Some(toplevel.downcast::<ApplicationWindow>().unwrap())
+    } else {
+        None
+    }
+}*/
+
+/// Displays an error message dialog with an optional custom title and message.
+///
+/// This function creates a `MessageDialog` of type `Error` and displays it.
+/// The dialog is set to be transient for the provided parent widget's top-level
+/// `ApplicationWindow`, ensuring it is properly associated with the parent
+/// and managed accordingly by the window manager. The dialog is closed when
+/// the user clicks the "OK" button.
+///
+/// # Arguments
+///
+/// * `parent` - A reference to any widget implementing the `IsA<Widget>` trait,
+///              used to find the top-level `ApplicationWindow` to set as the parent.
+/// * `title` - An optional custom title for the dialog. If `None`, the default title "Error" is used.
+/// * `message` - An optional custom message for the dialog. If `None`, the default message "An error has occurred!" is used.
+///
+/// # Example
+///
+/// ```
+/// use gtk::prelude::*;
+/// use gtk::{Application, ApplicationWindow, Box as GtkBox, Button};
+///
+/// fn main() {
+///     let application = Application::new(
+///         Some("com.example.gtk-error-popup"),
+///         Default::default(),
+///     ).expect("Initialization failed...");
+///
+///     application.connect_activate(|app| {
+///         let window = ApplicationWindow::new(app);
+///         window.set_title("Error Popup Example");
+///         window.set_default_size(300, 100);
+///
+///         let vbox = GtkBox::new(gtk::Orientation::Vertical, 0);
+///
+///         let button = Button::with_label("Show Error");
+///         button.connect_clicked(clone!(@strong vbox => move |_| {
+///             show_error_message(&vbox, Some("Custom Error Title"), Some("A custom error message has occurred!"));
+///         }));
+///
+///         vbox.add(&button);
+///         window.add(&vbox);
+///         window.show_all();
+///     });
+///
+///     application.run(&[]);
+/// }
+///
+/// fn show_error_message(parent: &impl IsA<Widget>, title: Option<&str>, message: Option<&str>) {
+///     let dialog_title = title.unwrap_or("Error");
+///     let dialog_message = message.unwrap_or("An error has occurred!");
+///
+///     if let Some(toplevel) = get_toplevel_window(parent) {
+///         let dialog = gtk::MessageDialog::new(
+///             Some(&toplevel),
+///             gtk::DialogFlags::empty(),
+///             gtk::MessageType::Error,
+///             gtk::ButtonsType::Ok,
+///             dialog_message,
+///         );
+///
+///         dialog.set_title(dialog_title);
+///
+///         dialog.connect_response(|dialog, _| {
+///             dialog.close();
+///         });
+///
+///         dialog.show();
+///     } else {
+///         println!("Failed to find the top-level window.");
+///     }
+/// }
+/// ```
+///
+/// # Panics
+///
+/// This function does not panic. If the top-level `ApplicationWindow` cannot be found,
+/// the function will simply print an error message to the console.
+// fn show_error_message(parent: &impl IsA<gtk::Widget>, title: Option<&str>, message: Option<&str>) {
+fn show_error_message(title: Option<&str>, message: Option<&str>) {
+    let dialog_title = title.unwrap_or("Error");
+    let dialog_message = message.unwrap_or("An error has occurred!");
+
+    // if let Some(toplevel) = get_toplevel_window(parent) {
+    let dialog = MessageDialog::new(
+        None::<&ApplicationWindow>, //Some(&parent), // Set the parent window
+        gtk::DialogFlags::empty(),  // No special flags
+        MessageType::Error,         // Type of the message
+        gtk::ButtonsType::Ok,       // Buttons to display
+        dialog_message,             // Message text
+    );
+
+    // Set the dialog title
+    dialog.set_title(Option::from(dialog_title));
+
+    // Connect the response signal to close the dialog when a response is received
+    dialog.connect_response(|dialog, _| {
+        dialog.close();
+    });
+
+    // Show the dialog
+    dialog.show();
+    /*} else {
+        println!("[ERROR] show_error_message: Failed to find the top-level window.");
+        // panic!("Aaaaahhhhh!!");
+    }*/
 }
 
 // --- end helper ---------------------------------------------------------------------------------
@@ -83,7 +231,7 @@ fn generate_config(name: Option<&str>, dob: Option<&str>, title: Option<&str>) -
 ///
 /// TODO(felix): add documentation
 ///
-pub fn workspace_ui() -> gtk::Box {
+pub fn workspace_ui() -> GtkBox {
     // container for ui elements
     // -------------------------
     let workspace_main_container = gtk::Box::builder()
@@ -248,6 +396,7 @@ pub fn workspace_ui() -> gtk::Box {
     let save_btn = Button::with_label("save config");
     container_right.append(&save_btn);
 
+    // save_btn.connect_clicked(gtk::glib::clone!(@strong workspace_main_container => move |_| {
     save_btn.connect_clicked(move |_| {
         let conf_name: Option<&str> = Option::from("name");
         let conf_dob: Option<&str> = Option::from("01.01.2024");
@@ -257,10 +406,13 @@ pub fn workspace_ui() -> gtk::Box {
 
         // if the filename is not empty and ends with .toml
         if config_file_name.is_empty() || !config_file_name.ends_with(".toml") {
-            // TODO(felix): add popup warning via gtk
             println!(
                 "[WARNING] configs not saved - no filename given: {}",
                 config_file_name
+            );
+            show_error_message(
+                Option::from("WORKSPACE ERROR"),
+                Option::from("No config >loaded< or >created and saved<"),
             );
         } else {
             save_config(&config_file_name, &workspace_configs).unwrap();

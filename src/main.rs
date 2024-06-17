@@ -38,7 +38,7 @@ fn main() {
 fn build_ui(app: &Application) {
     let app_name = option_env!("CARGO_PKG_NAME").unwrap_or("AI Lab");
     let version = option_env!("CARGO_PKG_VERSION").unwrap_or("0.0.0");
-    let title = format!("{} - by Felix D. - v{}", app_name, version);
+    let title = format!("{} - v{}", app_name, version);
 
     let window = ApplicationWindow::builder()
         .title(&title)

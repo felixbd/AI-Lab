@@ -28,6 +28,7 @@ test:
 	cargo test
 
 checkstyle:
+	cargo clippy
 	cargo fmt --all -- --check
 
 doc:

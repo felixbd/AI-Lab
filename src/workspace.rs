@@ -3,7 +3,7 @@
 
 use gtk::prelude::*;
 
-use gtk::{ApplicationWindow, Box as GtkBox, MessageDialog, MessageType};
+use gtk::{ApplicationWindow, Box as GtkBox, CellRendererText, MessageDialog, MessageType};
 use gtk::{Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
 use serde::{Deserialize, Serialize};
@@ -234,13 +234,13 @@ pub fn workspace_ui() -> GtkBox {
     // -------------------------
     let workspace_main_container = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
-        .margin_top(4)
+        .margin_top(15)
         .margin_bottom(24)
-        .margin_start(4)
-        .margin_end(24)
-        .halign(gtk::Align::Center)
-        .valign(gtk::Align::Center)
-        .spacing(24)
+        .margin_start(50)
+        .margin_end(50)
+        // .halign(gtk::Align::Center)
+        // .valign(gtk::Align::Center)
+        .spacing(35)
         .build();
 
     let container_left = gtk::Box::builder()
@@ -289,9 +289,17 @@ pub fn workspace_ui() -> GtkBox {
         dialog.show();
     });
     container_left.append(&select_workspace_btn);
-    workspace_main_container.append(&container_left);
 
+    workspace_main_container.append(&container_left);
+    container_left.set_hexpand(false);
+    container_left.set_vexpand(false);
+    // workspace_main_container.pack_start(&container_left, false);  //, false, 0);
+
+    // ---------------------------------------------------------------------------------------------
     workspace_main_container.append(&gtk::Label::builder().label("or").build());
+
+    // workspace_main_container.pack_start(&gtk::Label::builder().label("or").build(), false);
+    // ---------------------------------------------------------------------------------------------
 
     let container_right = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
@@ -339,6 +347,47 @@ pub fn workspace_ui() -> GtkBox {
     // add_class_btn.set_visible(false); // Initially hidden
     container_right.append(&add_class_btn);
 
+    let tree_store = gtk::TreeStore::new(&[String::static_type()]);
+    let parent_iter = tree_store.append(None);
+    tree_store.set_value(&parent_iter, 0, &"Parent 1".to_value());
+
+    let child_iter = tree_store.append(Some(&parent_iter));
+    tree_store.set_value(&child_iter, 0, &"Child 1".to_value());
+
+    let test = tree_store.append(Some(&parent_iter));
+    tree_store.set_value(&test, 0, &"hello".to_value());
+
+    let tree_view = gtk::TreeView::with_model(&tree_store);
+
+    let renderer = CellRendererText::new();
+    let column = gtk::TreeViewColumn::new();
+    column.set_title("Column 1");
+    column.pack_start(&renderer, true);
+    column.add_attribute(&renderer, "text", 0);
+    tree_view.append_column(&column);
+
+    container_right.append(&tree_view);
+
+    let classes_list = gtk::TreeView::builder().reorderable(true).build();
+
+    let x = gtk::TreeViewColumn::builder().title("Labels:").build();
+
+    let y = gtk::TreeViewColumn::builder()
+        .title("Colors:")
+        .expand(true)
+        .spacing(3)
+        .build();
+
+    let f: CellRendererText = gtk::CellRendererText::builder().text("hello").build();
+
+    x.add_attribute(&f, "Labels:", 0);
+    x.add_attribute(&gtk::CellRendererText::new(), "fuuu", 1);
+    x.add_attribute(&gtk::CellRendererText::new(), "fu", 3);
+
+    classes_list.append_column(&x);
+    classes_list.append_column(&y);
+    container_right.append(&classes_list);
+
     add_class_btn.connect_clicked(move |_| {
         let dialog = Dialog::new();
         dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
@@ -363,8 +412,12 @@ pub fn workspace_ui() -> GtkBox {
 
         dialog.connect_response(move |dialog, response| {
             if response == ResponseType::Ok {
-                let name = name_entry.text();
+                let name = name_entry.text().to_string();
                 let color = color_button.rgba();
+
+                /*if !name.is_empty() {
+                    x.add_attribute(&gtk::CellRendererText::new(), "fuu", 0);
+                }*/
                 println!("Label Class Name: {}", name);
                 println!("Selected Color: {:?}", color);
             }
@@ -387,12 +440,21 @@ pub fn workspace_ui() -> GtkBox {
     });
 
     container_right.append(&Label::new(Some("Save config to .toml file:")));
-    let config_filename_entry = Entry::new();
-    config_filename_entry.set_placeholder_text(Some("example_workspace.toml"));
-    container_right.append(&config_filename_entry);
 
-    let save_btn = Button::with_label("save config");
-    container_right.append(&save_btn);
+    let save_config_box = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(5)
+        .build();
+
+    let config_filename_entry = Entry::builder()
+        .placeholder_text("example_workspace.toml")
+        .build();
+
+    let save_btn = Button::with_label("save");
+
+    save_config_box.append(&config_filename_entry);
+    save_config_box.append(&save_btn);
+    container_right.append(&save_config_box);
 
     save_btn.connect_clicked(
         gtk::glib::clone!(@strong workspace_main_container => move |_| {
@@ -411,7 +473,8 @@ pub fn workspace_ui() -> GtkBox {
                 show_error_message(
                     &workspace_main_container,
                     Option::from("WORKSPACE ERROR"),
-                    Option::from("No config >loaded< or >created and saved<"),
+                    Option::from("\nUnable to save configs.\n\n  \
+                        No filename given or\nfilename dose not end with .toml"),
                 );
             } else {
                 save_config(&config_file_name, &workspace_configs).unwrap();
@@ -421,6 +484,9 @@ pub fn workspace_ui() -> GtkBox {
     );
 
     workspace_main_container.append(&container_right);
+    container_right.set_hexpand(true);
+    container_right.set_vexpand(true);
+    // workspace_main_container.pack_start(&container_right, true, true, 0);
 
     workspace_main_container
 }

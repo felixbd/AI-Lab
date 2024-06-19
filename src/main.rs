@@ -7,6 +7,9 @@ use gtk::{Application, ApplicationWindow, Box as GtkBox, Label, Notebook};
 mod workspace;
 use workspace::workspace_ui;
 
+mod annotation;
+use annotation::annotation_ui;
+
 /// Sets up and runs the main application.
 ///
 /// This function initializes an application with a specific ID,
@@ -51,9 +54,7 @@ fn build_ui(app: &Application) {
     window.set_child(Some(&notebook));
 
     notebook.append_page(&workspace_ui(), Some(&Label::new(Some("Workspace"))));
-
-    let page2_label = Label::new(Some("Annotation"));
-    notebook.append_page(&page2_label, Some(&Label::new(Some("Annotation"))));
+    notebook.append_page(&annotation_ui(), Some(&Label::new(Some("Annotation"))));
 
     let page3_label = Label::new(Some("Preprocessing"));
     notebook.append_page(&page3_label, Some(&Label::new(Some("Preprocessing"))));

@@ -239,13 +239,14 @@ pub fn workspace_ui() -> GtkBox {
         .margin_start(50)
         .margin_end(50)
         // .halign(gtk::Align::Center)
-        // .valign(gtk::Align::Center)
+        .valign(gtk::Align::Center)
         .spacing(35)
         .build();
 
     let container_left = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(24)
+        // .valign(gtk::Align::Center)
         .build();
 
     // add label to container
@@ -314,23 +315,27 @@ pub fn workspace_ui() -> GtkBox {
     title2.add_css_class("title-3");
     container_right.append(&title2);
 
+    let selection_box = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(20)
+        .build();
+
     // Drop Down for selecting the problem type
     // -----------------------------------------
-    let problem_types = vec!["Classification (Predicting Data)", "Clustering (Grouping)"];
+    let classification_tgl = gtk::ToggleButton::with_label("Classification (Predicting Data)");
+    let clustering_tgl = gtk::ToggleButton::with_label("Clustering (Grouping)");
+    classification_tgl.set_group(Some(&clustering_tgl));
 
-    let expression = gtk::PropertyExpression::new(
-        gtk::StringObject::static_type(),
-        None::<gtk::Expression>,
-        "string",
-    );
+    let class_cluster_tgls = gtk::Box::builder()
+        .spacing(0)
+        .orientation(gtk::Orientation::Horizontal)
+        .build();
+    class_cluster_tgls.append(&classification_tgl);
+    class_cluster_tgls.append(&clustering_tgl);
 
-    let problem_kind_dd = DropDown::new(
-        Some(&gtk::StringList::new(problem_types.as_slice())),
-        Some(expression),
-    );
-    container_right.append(&problem_kind_dd);
+    container_right.append(&class_cluster_tgls);
 
-    let data_types = vec!["sequential", "images"];
+    let data_types = vec!["images", "DICOM", "sound / speech"];
     let expression2 = gtk::PropertyExpression::new(
         gtk::StringObject::static_type(),
         None::<gtk::Expression>,
@@ -341,7 +346,9 @@ pub fn workspace_ui() -> GtkBox {
         Some(&gtk::StringList::new(data_types.as_slice())),
         Some(expression2),
     );
-    container_right.append(&data_kind_dd);
+    selection_box.append(&data_kind_dd);
+
+    container_right.append(&selection_box);
 
     let add_class_btn = Button::with_label("Add class to predict");
     // add_class_btn.set_visible(false); // Initially hidden
@@ -388,56 +395,58 @@ pub fn workspace_ui() -> GtkBox {
     classes_list.append_column(&y);
     container_right.append(&classes_list);
 
-    add_class_btn.connect_clicked(move |_| {
-        let dialog = Dialog::new();
-        dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
-        dialog.set_default_size(400, 200);
+    add_class_btn.connect_clicked(
+        gtk::glib::clone!(@strong workspace_main_container => move |_| {
+            if !classification_tgl.is_active() {
+                show_error_message(
+                    &workspace_main_container,
+                    Option::from("WORKSPACE ERROR"),
+                    Option::from("\nUnable to add label/class,\nsince clustering is selected."),
+                );
+            } else {
+                let dialog = Dialog::new();
+                dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
+                dialog.set_default_size(400, 200);
 
-        let content_area = dialog.content_area();
-        let vbox = gtk::Box::new(Orientation::Vertical, 15);
+                let content_area = dialog.content_area();
+                let vbox = gtk::Box::new(Orientation::Vertical, 15);
 
-        let name_entry = Entry::new();
-        name_entry.set_placeholder_text(Some("Enter label class name"));
-        let color_button = ColorButton::new();
+                let name_entry = Entry::new();
+                name_entry.set_placeholder_text(Some("Enter label class name"));
+                let color_button = ColorButton::new();
 
-        vbox.append(&Label::new(Some("Label Class Name:")));
-        vbox.append(&name_entry);
-        vbox.append(&Label::new(Some("Select Color:")));
-        vbox.append(&color_button);
+                vbox.append(&Label::new(Some("Label Class Name:")));
+                vbox.append(&name_entry);
+                vbox.append(&Label::new(Some("Select Color:")));
+                vbox.append(&color_button);
 
-        content_area.append(&vbox);
+                content_area.append(&vbox);
 
-        dialog.add_button("Cancel", ResponseType::Cancel);
-        dialog.add_button("OK", ResponseType::Ok);
+                dialog.add_button("Cancel", ResponseType::Cancel);
+                dialog.add_button("OK", ResponseType::Ok);
 
-        dialog.connect_response(move |dialog, response| {
-            if response == ResponseType::Ok {
-                let name = name_entry.text().to_string();
-                let color = color_button.rgba();
+                dialog.connect_response(move |dialog, response| {
+                    if response == ResponseType::Ok {
+                        let name = name_entry.text().to_string();
+                        let color = color_button.rgba();
 
-                /*if !name.is_empty() {
-                    x.add_attribute(&gtk::CellRendererText::new(), "fuu", 0);
-                }*/
-                println!("Label Class Name: {}", name);
-                println!("Selected Color: {:?}", color);
+                        /*if !name.is_empty() {
+                            x.add_attribute(&gtk::CellRendererText::new(), "fuu", 0);
+                        }*/
+                        println!("Label Class Name: {}", name);
+                        println!("Selected Color: {:?}", color);
+                    }
+                    dialog.close();
+                });
+
+                dialog.show();
             }
-            dialog.close();
-        });
+        }),
+    );
 
-        dialog.show();
-    });
-
-    problem_kind_dd.connect_notify_local(Some("selected-item"), move |drop_down, _| {
-        if let Some(selected_item) = drop_down.selected_item() {
-            add_class_btn.set_visible(
-                "Classification (Predicting Data)"
-                    == selected_item
-                        .downcast_ref::<gtk::StringObject>()
-                        .unwrap()
-                        .string(),
-            );
-        }
-    });
+    /*classification_tgl.connect_clicked(move |classification_tgl| {
+        add_class_btn.set_visible(classification_tgl.is_active())
+    });*/
 
     container_right.append(&Label::new(Some("Save config to .toml file:")));
 
@@ -446,9 +455,7 @@ pub fn workspace_ui() -> GtkBox {
         .spacing(5)
         .build();
 
-    let config_filename_entry = Entry::builder()
-        .placeholder_text("example_workspace.toml")
-        .build();
+    let config_filename_entry = Entry::builder().placeholder_text("example.toml").build();
 
     let save_btn = Button::with_label("save");
 

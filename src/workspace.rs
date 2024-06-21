@@ -2,7 +2,7 @@
 // Copyright (C) 2024 - Felix Drees - GNU General Public License v3.0
 
 use gtk::prelude::*;
-use gtk::{Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
+use gtk::{gdk, Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
 use crate::helper::{
     generate_config, /* load_config, modify_config, */
@@ -82,10 +82,67 @@ fn select_project_ui() -> gtk::Box {
         dialog.show();
     });
 
+    // add tree view for recent projects
+    // ---------------------------------------------------------------------------------------------
+    let model = gtk::ListStore::new(&[String::static_type()]);
+
+    model.insert_with_values(None, &[(0, &"example.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"test.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"test2.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"fuu.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"bar.toml".to_value())]);
+
+    let view = gtk::TreeView::with_model(&model);
+
+    let read1 = gtk::CellRendererText::new();
+    let col1 = gtk::TreeViewColumn::new();
+
+    col1.set_title("recent projects:");
+    col1.pack_start(&read1, true);
+    col1.add_attribute(&read1, "text", 0);
+    view.append_column(&col1);
+
+    let scrolled_window = gtk::ScrolledWindow::builder().height_request(150).build();
+
+    scrolled_window.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
+    scrolled_window.set_child(Some(&view));
+
+    // Create a CSS provider and load the CSS
+    let provider = gtk::CssProvider::new();
+    provider.load_from_data(
+        b"
+        treeview {
+            border: 1px solid gray;
+        }
+        ",
+    );
+
+    // Add the CSS provider to the default screen
+    gtk::StyleContext::add_provider_for_display(
+        &gdk::Display::default().unwrap(),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
+
+    let button = Button::with_label("open selected project");
+    // let model_clone = model.clone();
+
+    button.connect_clicked(move |_| {
+        println!("hmmm ok ... {}", view.selection());
+        /*let selection = view.selection();
+        if let Some((model, iter)) = selection.selected() {
+            // model.remove(&iter);
+            // model.connect_row_deleted(iter);
+            print!("trying to delete a row");
+        }*/
+    });
+
     // add elements to vbox
     // ---------------------------------------------------------------------------------------------
     vbox.append(&title);
     vbox.append(&select_workspace_btn);
+    vbox.append(&scrolled_window);
+    vbox.append(&button);
     vbox.set_vexpand(false);
     vbox.set_hexpand(false);
 
@@ -128,8 +185,10 @@ fn create_new_project_ui() -> gtk::Box {
 
     let data_types = vec![
         "images",
-        /*"DICOM",*/ "sound / speech", /*, etc. TODO */
+        /*"DICOM",*/ "sound / speech",
+        "sequential sensors", /*, etc. TODO */
     ];
+
     let expression2 = gtk::PropertyExpression::new(
         gtk::StringObject::static_type(),
         None::<gtk::Expression>,
@@ -140,7 +199,14 @@ fn create_new_project_ui() -> gtk::Box {
         Some(&gtk::StringList::new(data_types.as_slice())),
         Some(expression2),
     );
-    selection_box.append(&data_kind_dd);
+
+    let temp = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .build();
+
+    temp.append(&gtk::Label::new(Some("Data type: ")));
+    temp.append(&data_kind_dd);
+    selection_box.append(&temp);
 
     let _select_and_add_class_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
@@ -151,7 +217,6 @@ fn create_new_project_ui() -> gtk::Box {
     main_vbox.append(&selection_box);
 
     // --- showing a list of all selected classes --------------------------------------------------
-
     let model = gtk::ListStore::new(&[String::static_type()]);
 
     model.insert_with_values(None, &[(0, &"default / background".to_value())]);
@@ -176,6 +241,23 @@ fn create_new_project_ui() -> gtk::Box {
 
     scrolled_window.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
     scrolled_window.set_child(Some(&view));
+
+    // Create a CSS provider and load the CSS
+    let provider = gtk::CssProvider::new();
+    provider.load_from_data(
+        b"
+        treeview {
+            border: 1px solid gray;
+        }
+        ",
+    );
+
+    // Add the CSS provider to the default screen
+    gtk::StyleContext::add_provider_for_display(
+        &gdk::Display::default().unwrap(),
+        &provider,
+        gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
+    );
 
     let add_class_btn = Button::with_label("Add class to predict");
     let button = Button::with_label("Delete Selected Row");

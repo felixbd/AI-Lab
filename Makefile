@@ -27,6 +27,8 @@ clean:
 test:
 	cargo test
 
+c: checkstyle
+
 checkstyle:
 	cargo clippy
 	cargo fmt --all -- --check
@@ -48,6 +50,8 @@ open-doc:
 	else \
 		echo "Neither xdg-open nor firefox is installed. Please install one to open docs via this Makefile."; \
 	fi
+
+f: format
 
 format:
 	cargo fmt

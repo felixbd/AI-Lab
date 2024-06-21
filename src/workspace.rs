@@ -335,7 +335,10 @@ pub fn workspace_ui() -> GtkBox {
 
     container_right.append(&class_cluster_tgls);
 
-    let data_types = vec!["images", "DICOM", "sound / speech"];
+    let data_types = vec![
+        "images",
+        /*"DICOM",*/ "sound / speech", /*, etc. TODO */
+    ];
     let expression2 = gtk::PropertyExpression::new(
         gtk::StringObject::static_type(),
         None::<gtk::Expression>,
@@ -348,52 +351,67 @@ pub fn workspace_ui() -> GtkBox {
     );
     selection_box.append(&data_kind_dd);
 
-    container_right.append(&selection_box);
-
-    let add_class_btn = Button::with_label("Add class to predict");
-    // add_class_btn.set_visible(false); // Initially hidden
-    container_right.append(&add_class_btn);
-
-    let tree_store = gtk::TreeStore::new(&[String::static_type()]);
-    let parent_iter = tree_store.append(None);
-    tree_store.set_value(&parent_iter, 0, &"Parent 1".to_value());
-
-    let child_iter = tree_store.append(Some(&parent_iter));
-    tree_store.set_value(&child_iter, 0, &"Child 1".to_value());
-
-    let test = tree_store.append(Some(&parent_iter));
-    tree_store.set_value(&test, 0, &"hello".to_value());
-
-    let tree_view = gtk::TreeView::with_model(&tree_store);
-
-    let renderer = CellRendererText::new();
-    let column = gtk::TreeViewColumn::new();
-    column.set_title("Column 1");
-    column.pack_start(&renderer, true);
-    column.add_attribute(&renderer, "text", 0);
-    tree_view.append_column(&column);
-
-    container_right.append(&tree_view);
-
-    let classes_list = gtk::TreeView::builder().reorderable(true).build();
-
-    let x = gtk::TreeViewColumn::builder().title("Labels:").build();
-
-    let y = gtk::TreeViewColumn::builder()
-        .title("Colors:")
-        .expand(true)
-        .spacing(3)
+    let _select_and_add_class_box = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(40)
+        .hexpand(true)
         .build();
 
-    let f: CellRendererText = gtk::CellRendererText::builder().text("hello").build();
+    container_right.append(&selection_box);
 
-    x.add_attribute(&f, "Labels:", 0);
-    x.add_attribute(&gtk::CellRendererText::new(), "fuuu", 1);
-    x.add_attribute(&gtk::CellRendererText::new(), "fu", 3);
+    // --- showing a list of all selected classes --------------------------------------------------
 
-    classes_list.append_column(&x);
-    classes_list.append_column(&y);
-    container_right.append(&classes_list);
+    let model = gtk::ListStore::new(&[String::static_type()]);
+
+    model.insert_with_values(None, &[(0, &"default / background".to_value())]);
+    model.insert_with_values(None, &[(0, &"dog".to_value())]);
+    model.insert_with_values(None, &[(0, &"cat".to_value())]);
+    model.insert_with_values(None, &[(0, &"tree".to_value())]);
+    model.insert_with_values(None, &[(0, &"water".to_value())]);
+    model.insert_with_values(None, &[(0, &"road".to_value())]);
+    model.insert_with_values(None, &[(0, &"etc.".to_value())]);
+
+    let view = gtk::TreeView::with_model(&model);
+    let read1 = CellRendererText::new();
+    let col1 = gtk::TreeViewColumn::new();
+
+    col1.set_title("Labels / Classes");
+    col1.pack_start(&read1, true);
+    col1.add_attribute(&read1, "text", 0);
+    view.append_column(&col1);
+
+    let scrolled_window = gtk::ScrolledWindow::builder().height_request(150).build();
+
+    scrolled_window.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
+    scrolled_window.set_child(Some(&view));
+
+    let add_class_btn = Button::with_label("Add class to predict");
+    let button = Button::with_label("Delete Selected Row");
+    // let model_clone = model.clone();
+
+    button.connect_clicked(move |_| {
+        println!("hmmm ok ... {}", view.selection());
+        /*let selection = view.selection();
+        if let Some((model, iter)) = selection.selected() {
+            // model.remove(&iter);
+            // model.connect_row_deleted(iter);
+            print!("trying to delete a row");
+        }*/
+    });
+
+    container_right.append(&scrolled_window);
+
+    let hbox = gtk::Box::builder()
+        .orientation(gtk::Orientation::Horizontal)
+        .spacing(30)
+        .build();
+
+    hbox.append(&add_class_btn);
+    hbox.append(&button);
+
+    container_right.append(&hbox);
+
+    // ------------------------------------------------------------------------------------------
 
     add_class_btn.connect_clicked(
         gtk::glib::clone!(@strong workspace_main_container => move |_| {
@@ -404,6 +422,7 @@ pub fn workspace_ui() -> GtkBox {
                     Option::from("\nUnable to add label/class,\nsince clustering is selected."),
                 );
             } else {
+                // --- aks the user for a name and color for the new class / label ---
                 let dialog = Dialog::new();
                 dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
                 dialog.set_default_size(400, 200);
@@ -425,6 +444,7 @@ pub fn workspace_ui() -> GtkBox {
                 dialog.add_button("Cancel", ResponseType::Cancel);
                 dialog.add_button("OK", ResponseType::Ok);
 
+                // --- implementing response for adding class / label ---
                 dialog.connect_response(move |dialog, response| {
                     if response == ResponseType::Ok {
                         let name = name_entry.text().to_string();

@@ -23,6 +23,9 @@ unsafe_code = "forbid"
 [dependencies]
 # GUI
 gtk = { version = "0.4.7", package = "gtk4" }
+# glib = "0.10"
+# cairo-rs = "0.14"
+# gdk-pixbuf = "0.19"
 
 # parsing and serialization toml config files
 toml = "0.5.9"

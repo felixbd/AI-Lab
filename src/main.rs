@@ -5,9 +5,11 @@ use gtk::prelude::*;
 use gtk::{Application, ApplicationWindow, Box as GtkBox, Label, Notebook};
 
 mod workspace;
-use workspace::workspace_ui;
+use workspace::projects_ui;
 
 mod annotation;
+mod helper;
+
 use annotation::annotation_ui;
 
 /// Sets up and runs the main application.
@@ -53,7 +55,7 @@ fn build_ui(app: &Application) {
     let notebook = Notebook::new();
     window.set_child(Some(&notebook));
 
-    notebook.append_page(&workspace_ui(), Some(&Label::new(Some("Workspace"))));
+    notebook.append_page(&projects_ui(), Some(&Label::new(Some("Projects"))));
     notebook.append_page(&annotation_ui(), Some(&Label::new(Some("Annotation"))));
 
     let page3_label = Label::new(Some("Preprocessing"));

@@ -6,7 +6,7 @@ use gtk::prelude::*;
 use gtk::{ApplicationWindow, /* Box as GtkBox, CellRendererText, */ MessageDialog, MessageType,};
 // use gtk::{Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
-use gtk::glib::IsA;
+/* use gtk::glib::IsA; */
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;

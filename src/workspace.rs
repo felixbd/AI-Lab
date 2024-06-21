@@ -2,7 +2,7 @@
 // Copyright (C) 2024 - Felix Drees - GNU General Public License v3.0
 
 use gtk::prelude::*;
-use gtk::{gdk, Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
+use gtk::{Button, Dialog, Entry, Label, Orientation, ResponseType};
 
 use crate::helper::{
     generate_config, /* load_config, modify_config, */
@@ -110,7 +110,7 @@ fn select_project_ui() -> gtk::Box {
     // Create a CSS provider and load the CSS
     let provider = gtk::CssProvider::new();
     provider.load_from_data(
-        b"
+        "
         treeview {
             border: 1px solid gray;
         }
@@ -118,8 +118,8 @@ fn select_project_ui() -> gtk::Box {
     );
 
     // Add the CSS provider to the default screen
-    gtk::StyleContext::add_provider_for_display(
-        &gdk::Display::default().unwrap(),
+    gtk::style_context_add_provider_for_display(
+        &gtk::gdk::Display::default().unwrap(),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
@@ -128,7 +128,7 @@ fn select_project_ui() -> gtk::Box {
     // let model_clone = model.clone();
 
     button.connect_clicked(move |_| {
-        println!("hmmm ok ... {}", view.selection());
+        println!("hmmm ok ... {:?}", view.selection());
         /*let selection = view.selection();
         if let Some((model, iter)) = selection.selected() {
             // model.remove(&iter);
@@ -195,10 +195,10 @@ fn create_new_project_ui() -> gtk::Box {
         "string",
     );
 
-    let data_kind_dd = DropDown::new(
-        Some(&gtk::StringList::new(data_types.as_slice())),
-        Some(expression2),
-    );
+    let data_kind_dd = gtk::DropDown::builder()
+        .model(&gtk::StringList::new(data_types.as_slice()))
+        .expression(expression2)
+        .build();
 
     let temp = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
@@ -245,7 +245,7 @@ fn create_new_project_ui() -> gtk::Box {
     // Create a CSS provider and load the CSS
     let provider = gtk::CssProvider::new();
     provider.load_from_data(
-        b"
+        "
         treeview {
             border: 1px solid gray;
         }
@@ -253,8 +253,8 @@ fn create_new_project_ui() -> gtk::Box {
     );
 
     // Add the CSS provider to the default screen
-    gtk::StyleContext::add_provider_for_display(
-        &gdk::Display::default().unwrap(),
+    gtk::style_context_add_provider_for_display(
+        &gtk::gdk::Display::default().unwrap(),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
@@ -264,7 +264,7 @@ fn create_new_project_ui() -> gtk::Box {
     // let model_clone = model.clone();
 
     button.connect_clicked(move |_| {
-        println!("hmmm ok ... {}", view.selection());
+        println!("hmmm ok ... {:?}", view.selection());
         /*let selection = view.selection();
         if let Some((model, iter)) = selection.selected() {
             // model.remove(&iter);
@@ -306,7 +306,7 @@ fn create_new_project_ui() -> gtk::Box {
 
             let name_entry = Entry::new();
             name_entry.set_placeholder_text(Some("Enter label class name"));
-            let color_button = ColorButton::new();
+            let color_button = gtk::ColorButton::new();
 
             vbox.append(&Label::new(Some("Label Class Name:")));
             vbox.append(&name_entry);

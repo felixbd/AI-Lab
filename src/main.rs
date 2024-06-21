@@ -21,14 +21,13 @@ use annotation::annotation_ui;
 ///
 /// Returns a `glib::ExitCode` indicating the exit status of the application.
 ///
-fn main() {
-    // -> glib::ExitCode {
+fn main() -> glib::ExitCode {
     let app = Application::builder()
         .application_id("example.ai-lab")
         .build();
 
     app.connect_activate(build_ui);
-    app.run();
+    app.run()
 }
 
 /// Builds the user interface for the application.
@@ -46,7 +45,7 @@ fn build_ui(app: &Application) {
     let title = format!("{} - v{}", app_name, version);
 
     let window = ApplicationWindow::builder()
-        .title(&title)
+        .title(title)
         .application(app)
         .default_width(700)
         .default_height(500)

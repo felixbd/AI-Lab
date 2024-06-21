@@ -8,25 +8,21 @@ description = "GUI for annotating, training, and evaluating AI models, simplifyi
 repository = "https://github.com/felixbd/ai-lab"
 license = "GPL-3.0 license"
 # license-file = "LICENSE"
-keywords = ["ai", "ml", "gtk"]
+keywords = ["ai", "ml", "gtk", "gui"]
 publish = false
 
 [badges]
 maintenance = { status = "actively-developed" }
 
 [lints.rust]
-unsafe_code = "forbid"
+unsafe_code = "forbid"  # { level = "forbid", priority = 0 }
 
-# [lints.clippy]
-# enum_glob_use = "deny"
+[lints.clippy]
+# msrv = "1.30.0"
+enum_glob_use = "deny"
 
-[dependencies]
-# GUI
-gtk = { version = "0.4.7", package = "gtk4" }
-# glib = "0.10"
-# cairo-rs = "0.14"
-# gdk-pixbuf = "0.19"
-
-# parsing and serialization toml config files
-toml = "0.5.9"
-serde = { version = "1.0", features = ["derive"] }
+[dependencies]  # see: https://crates.io/
+gtk = { version = "0.8.2", package = "gtk4" }           # GUI - Rust GTK 4 bindings
+glib = "0.19.8"                                         # GUI - Rust GLib and GObject bindings
+toml = "0.8.14"                                         # parsing      .toml config files
+serde = { version = "1.0.203", features = ["derive"] }  # erialization .toml config files

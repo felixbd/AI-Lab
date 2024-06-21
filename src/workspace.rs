@@ -24,13 +24,16 @@ pub fn projects_ui() -> gtk::Box {
         .margin_bottom(24)
         .margin_start(50)
         .margin_end(50)
-        // .halign(gtk::Align::Center)
+        .halign(gtk::Align::Center)
         .valign(gtk::Align::Center)
         .spacing(35)
         .build();
 
+    let separating_or_label = gtk::Label::new(Some("or"));
+    separating_or_label.add_css_class("title-3");
+
     workspace_main_container.append(&select_project_ui());
-    workspace_main_container.append(&gtk::Label::builder().label("or").build());
+    workspace_main_container.append(&separating_or_label);
     workspace_main_container.append(&create_new_project_ui());
 
     workspace_main_container
@@ -54,7 +57,9 @@ fn select_project_ui() -> gtk::Box {
 
     // select project button
     // ---------------------------------------------------------------------------------------------
-    let select_workspace_btn = Button::builder().label("select project").build();
+    let select_workspace_btn = Button::builder()
+        .label("open project via file explorer")
+        .build();
 
     select_workspace_btn.connect_clicked(move |_| {
         // Create a new file chooser dialog
@@ -91,6 +96,9 @@ fn select_project_ui() -> gtk::Box {
     model.insert_with_values(None, &[(0, &"test2.toml".to_value())]);
     model.insert_with_values(None, &[(0, &"fuu.toml".to_value())]);
     model.insert_with_values(None, &[(0, &"bar.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"test5.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"fuu7.toml".to_value())]);
+    model.insert_with_values(None, &[(0, &"bar8.toml".to_value())]);
 
     let view = gtk::TreeView::with_model(&model);
 
@@ -143,8 +151,8 @@ fn select_project_ui() -> gtk::Box {
     vbox.append(&select_workspace_btn);
     vbox.append(&scrolled_window);
     vbox.append(&button);
-    vbox.set_vexpand(false);
-    vbox.set_hexpand(false);
+    // vbox.set_vexpand(false);
+    // vbox.set_hexpand(false);
 
     vbox
 }
@@ -211,7 +219,7 @@ fn create_new_project_ui() -> gtk::Box {
     let _select_and_add_class_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .spacing(40)
-        .hexpand(true)
+        // .hexpand(true)
         .build();
 
     main_vbox.append(&selection_box);
@@ -220,12 +228,12 @@ fn create_new_project_ui() -> gtk::Box {
     let model = gtk::ListStore::new(&[String::static_type()]);
 
     model.insert_with_values(None, &[(0, &"default / background".to_value())]);
-    model.insert_with_values(None, &[(0, &"dog".to_value())]);
+    /*model.insert_with_values(None, &[(0, &"dog".to_value())]);
     model.insert_with_values(None, &[(0, &"cat".to_value())]);
     model.insert_with_values(None, &[(0, &"tree".to_value())]);
     model.insert_with_values(None, &[(0, &"water".to_value())]);
     model.insert_with_values(None, &[(0, &"road".to_value())]);
-    model.insert_with_values(None, &[(0, &"etc.".to_value())]);
+    model.insert_with_values(None, &[(0, &"etc.".to_value())]);*/
 
     let view = gtk::TreeView::with_model(&model);
 
@@ -293,7 +301,10 @@ fn create_new_project_ui() -> gtk::Box {
             show_error_message(
                 None::<&gtk::Widget>,
                 Option::from("WORKSPACE ERROR"),
-                Option::from("\nUnable to add label/class,\nsince clustering is selected."),
+                Option::from(
+                    "Unable to add label/class, since classification is NOT selected.\n\
+                The problem has to be classification, otherwise classes/labels will be ignored.",
+                ),
             );
         } else {
             // --- aks the user for a name and color for the new class / label ---
@@ -383,8 +394,8 @@ fn create_new_project_ui() -> gtk::Box {
             println!("[INFO] saved config to file: {}", config_file_name);
         }
     });
-    main_vbox.set_hexpand(true);
-    main_vbox.set_vexpand(true);
+    // main_vbox.set_hexpand(true);
+    // main_vbox.set_vexpand(true);
 
     main_vbox
 }

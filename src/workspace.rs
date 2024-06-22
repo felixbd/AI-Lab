@@ -4,11 +4,7 @@
 use gtk::prelude::*;
 use gtk::{Button, Dialog, Entry, Label, Orientation, ResponseType};
 
-use crate::helper::{
-    generate_config, /* load_config, modify_config, */
-    save_config, /* get_toplevel_window, */ show_error_message,
-    /* Owner, Config */
-};
+use crate::helper::{generate_config, load_config, save_config, show_error_message};
 
 // Gtk RecentChooserDialog
 
@@ -78,6 +74,14 @@ fn select_project_ui() -> gtk::Box {
             if response == gtk::ResponseType::Accept {
                 if let Some(folder) = dialog.file() {
                     println!("Selected directory: {}", folder.path().unwrap().display());
+                    let config = load_config(&folder.path().unwrap().display().to_string());
+
+                    if let Ok(x) = config {
+                        println!("owner of config: {:?}", x.owner);
+                    } else {
+                        // TODO gtk dialog popup error / info box
+                        println!("WTF, give me a correct .toml file!!! pls")
+                    }
                 }
             }
             dialog.close();

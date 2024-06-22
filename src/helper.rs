@@ -11,11 +11,62 @@ use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
 
+#[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct DotFileConfig {
+    pub(crate) projects: Vec<String>,
+}
+
+/*
+pub(crate) fn update_dotfile(file_path: &str, config: Option<DotFileConfig>) -> Result<(), Box<dyn Error>> {
+    let current_config = {
+        if config.is_none() {  // try to read the current dotfile, since no config were given
+            if let Ok(content) = fs::read_to_string(file_path) {
+                toml::from_str(&content)?
+            } else {
+                DotFileConfig { projects: vec!["/hello.toml".to_string(), "/test.toml".to_string()] }
+            }
+        } else {  // use existing dotfile config
+            config.unwrap()
+        }
+    };
+
+    let toml_string = toml::to_string(&current_config)?;
+    let comment = "# This is a generated configuration file\n";
+    fs::write(file_path, format!("{0}{1}", comment, toml_string))?;
+    Ok(())
+}
+*/
+
+pub(crate) fn _update_dotfile(
+    file_path: &str,
+    config: Option<DotFileConfig>,
+) -> Result<(), Box<dyn Error>> {
+    let current_config = config.unwrap_or_else(|| {
+        fs::read_to_string(file_path)
+            .ok()
+            .and_then(|content| toml::from_str(&content).ok())
+            .unwrap_or(DotFileConfig {
+                projects: vec!["/hello.toml".to_string(), "/test.toml".to_string()],
+            })
+        // TODO(all): default should probably be empty ... this is just for testing
+    });
+
+    fs::write(
+        file_path,
+        format!(
+            "# This is a generated configuration file from AI Lab\n\
+             #  See: https://github.com/felixbd/ai-lab/\n\n{:?}",
+            toml::to_string(&current_config)
+        ),
+    )?;
+    Ok(())
+}
+
 /// some example struct for the config
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct Config {
     title: String,
-    owner: Owner,
+    pub(crate) owner: Owner,
 }
 
 /// even more example structs for the config
@@ -25,7 +76,7 @@ pub(crate) struct Owner {
     dob: String,
 }
 
-pub(crate) fn _load_config(file_path: &str) -> Result<Config, Box<dyn Error>> {
+pub(crate) fn load_config(file_path: &str) -> Result<Config, Box<dyn Error>> {
     let contents = fs::read_to_string(file_path)?;
     let config: Config = toml::from_str(&contents)?;
     Ok(config)

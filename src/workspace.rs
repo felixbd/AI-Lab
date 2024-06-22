@@ -187,6 +187,7 @@ fn create_new_project_ui() -> gtk::Box {
     let classification_tgl = gtk::ToggleButton::with_label("Classification (Predicting Data)");
     let clustering_tgl = gtk::ToggleButton::with_label("Clustering (Grouping)");
     classification_tgl.set_group(Some(&clustering_tgl));
+    classification_tgl.set_active(true);
 
     let class_cluster_tgls = gtk::Box::builder()
         .spacing(0)
@@ -274,10 +275,10 @@ fn create_new_project_ui() -> gtk::Box {
     );
 
     let add_class_btn = Button::with_label("Add class to predict");
-    let button = Button::with_label("Delete Selected Row");
+    let del_selected_row = Button::with_label("Delete Selected Row");
     // let model_clone = model.clone();
 
-    button.connect_clicked(move |_| {
+    del_selected_row.connect_clicked(move |_| {
         println!("hmmm ok ... {:?}", view.selection());
         /*let selection = view.selection();
         if let Some((model, iter)) = selection.selected() {
@@ -295,7 +296,7 @@ fn create_new_project_ui() -> gtk::Box {
         .build();
 
     hbox.append(&add_class_btn);
-    hbox.append(&button);
+    hbox.append(&del_selected_row);
 
     main_vbox.append(&hbox);
 

@@ -41,7 +41,7 @@ fn main() -> glib::ExitCode {
 ///
 fn build_ui(app: &Application) {
     let app_name = "AI Lab"; // option_env!("CARGO_PKG_NAME").unwrap_or("AI Lab");
-    let version = option_env!("CARGO_PKG_VERSION").unwrap_or("0.0.0");
+    let version = option_env!("CARGO_PKG_VERSION").unwrap_or("?.?.?");
     let title = format!("{} - v{}", app_name, version);
 
     let window = ApplicationWindow::builder()
@@ -92,13 +92,26 @@ fn license_ui() -> GtkBox {
     let title = Label::builder()
         .label(
             "AI Lab - GUI for annotating, training, and evaluating AI models\n\
-               Copyright (C) 2024 - Felix Drees - GNU General Public License v3.0",
+            Copyright (C) 2024 - Felix Drees - GNU General Public License v3.0",
         )
-        .halign(gtk::Align::Start)
         .build();
 
     title.add_css_class("title-2");
     container.append(&title);
+
+    let contributors_label = gtk::Label::builder()
+        .wrap(true)
+        .halign(gtk::Align::Center)
+        .label(format!(
+            "Contributors: {}",
+            option_env!("CARGO_PKG_AUTHORS")
+                .unwrap_or("ERROR while loading contributors list from Cargo.toml")
+                .replace(':', ", ")
+        ))
+        .build();
+
+    contributors_label.add_css_class("title-4");
+    container.append(&contributors_label);
 
     let content = Label::builder()
         .label(

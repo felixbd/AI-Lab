@@ -12,10 +12,38 @@ use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
 
+// --- begin structs -------------------------------------------------------------------------------
+
+/// Struct for representing content of dotfile for this application
+///
+/// `projects` contains a list of all projects the user has created, inorder to
+///   quickly load any given project
+///
+/// Supports:
+///  - `serde::Serialize`
+///  - `serde::Deserialize`
+///   - `Debug`
+///
 #[derive(Serialize, Deserialize, Debug)]
 pub(crate) struct DotFileConfig {
     pub(crate) projects: Vec<String>,
 }
+
+/// some example struct for the config
+#[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct Config {
+    title: String,
+    pub(crate) owner: Owner,
+}
+
+/// even more example structs for the config
+#[derive(Serialize, Deserialize, Debug)]
+pub(crate) struct Owner {
+    name: String,
+    dob: String,
+}
+
+// --- end structs ---------------------------------------------------------------------------------
 
 pub(crate) fn update_dotfile(
     new_project_path: &str,
@@ -55,20 +83,6 @@ pub(crate) fn update_dotfile(
         ),
     )?;
     Ok(())
-}
-
-/// some example struct for the config
-#[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct Config {
-    title: String,
-    pub(crate) owner: Owner,
-}
-
-/// even more example structs for the config
-#[derive(Serialize, Deserialize, Debug)]
-pub(crate) struct Owner {
-    name: String,
-    dob: String,
 }
 
 pub(crate) fn load_config(file_path: &str) -> Result<Config, Box<dyn Error>> {

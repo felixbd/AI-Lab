@@ -26,3 +26,4 @@ gtk = { version = "0.8.2", package = "gtk4" }           # GUI - Rust GTK 4 bindi
 glib = "0.19.8"                                         # GUI - Rust GLib and GObject bindings
 toml = "0.8.14"                                         # parsing      .toml config files
 serde = { version = "1.0.203", features = ["derive"] }  # erialization .toml config files
+home = "0.5.9"                                          # Canonical definitions of home_dir, cargo_home, and rustup_home.

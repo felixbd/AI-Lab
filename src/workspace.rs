@@ -4,7 +4,9 @@
 use gtk::prelude::*;
 use gtk::{Button, Dialog, Entry, Label, Orientation, ResponseType};
 
-use crate::helper::{generate_config, load_config, save_config, show_error_message};
+use crate::helper::{
+    generate_config, load_config, save_config, show_error_message, update_dotfile,
+};
 
 // Gtk RecentChooserDialog
 
@@ -394,6 +396,10 @@ fn create_new_project_ui() -> gtk::Box {
                 ),
             );
         } else {
+            // update dotfile list of all project config files
+            update_dotfile(&config_file_name, None).unwrap();
+
+            // save generated config to .toml file
             save_config(&config_file_name, &workspace_configs).unwrap();
             println!("[INFO] saved config to file: {}", config_file_name);
         }

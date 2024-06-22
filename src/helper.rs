@@ -7,6 +7,7 @@ use gtk::{ApplicationWindow, /* Box as GtkBox, CellRendererText, */ MessageDialo
 // use gtk::{Button, ColorButton, Dialog, DropDown, Entry, Label, Orientation, ResponseType};
 
 /* use gtk::glib::IsA; */
+use home::home_dir;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
@@ -16,47 +17,41 @@ pub(crate) struct DotFileConfig {
     pub(crate) projects: Vec<String>,
 }
 
-/*
-pub(crate) fn update_dotfile(file_path: &str, config: Option<DotFileConfig>) -> Result<(), Box<dyn Error>> {
-    let current_config = {
-        if config.is_none() {  // try to read the current dotfile, since no config were given
-            if let Ok(content) = fs::read_to_string(file_path) {
-                toml::from_str(&content)?
-            } else {
-                DotFileConfig { projects: vec!["/hello.toml".to_string(), "/test.toml".to_string()] }
-            }
-        } else {  // use existing dotfile config
-            config.unwrap()
-        }
-    };
-
-    let toml_string = toml::to_string(&current_config)?;
-    let comment = "# This is a generated configuration file\n";
-    fs::write(file_path, format!("{0}{1}", comment, toml_string))?;
-    Ok(())
-}
-*/
-
-pub(crate) fn _update_dotfile(
-    file_path: &str,
-    config: Option<DotFileConfig>,
+pub(crate) fn update_dotfile(
+    new_project_path: &str,
+    dotfile_path: Option<&str>,
 ) -> Result<(), Box<dyn Error>> {
-    let current_config = config.unwrap_or_else(|| {
-        fs::read_to_string(file_path)
-            .ok()
-            .and_then(|content| toml::from_str(&content).ok())
-            .unwrap_or(DotFileConfig {
-                projects: vec!["/hello.toml".to_string(), "/test.toml".to_string()],
-            })
-        // TODO(all): default should probably be empty ... this is just for testing
-    });
+    let users_home_dir = format!(
+        "{}/.config/ai-lab.toml",
+        home_dir().unwrap().to_str().unwrap()
+    );
+    let some_file_path = dotfile_path.unwrap_or(&users_home_dir);
+
+    let current_config = fs::read_to_string(some_file_path)
+        .ok()
+        .map(|content| {
+            let current_dotfile_config: DotFileConfig = toml::from_str(&content).ok().unwrap();
+            let mut dotfile_project_list = current_dotfile_config.projects;
+            dotfile_project_list.push(new_project_path.parse().unwrap());
+            DotFileConfig {
+                projects: dotfile_project_list,
+            }
+        })
+        .unwrap_or(DotFileConfig {
+            projects: vec![new_project_path.parse().unwrap()],
+        });
 
     fs::write(
-        file_path,
+        some_file_path,
         format!(
             "# This is a generated configuration file from AI Lab\n\
-             #  See: https://github.com/felixbd/ai-lab/\n\n{:?}",
-            toml::to_string(&current_config)
+             #  See: https://github.com/felixbd/ai-lab/ \n\
+             #\n\
+             # ai lab - GUI for annotating, training, and evaluating AI models, simplifying workflows\n\
+             # Copyright (C) 2024 - Felix Drees - GNU General Public License v3.0\n\
+             #\n\n\
+             {}",
+            toml::to_string(&current_config).unwrap()
         ),
     )?;
     Ok(())

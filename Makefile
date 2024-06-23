@@ -33,6 +33,9 @@ checkstyle:
 	cargo clippy
 	cargo fmt --all -- --check
 
+cloc:
+	cloc `git ls-files`
+
 doc:
 	cargo doc --no-deps
 	# rm -fr ./docs/

@@ -8,6 +8,9 @@ use crate::helper::{
     generate_config, load_config, save_config, show_error_message, update_dotfile,
 };
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 // Gtk RecentChooserDialog
 
 ///
@@ -188,6 +191,40 @@ fn create_new_project_ui() -> gtk::Box {
     let clustering_tgl = gtk::ToggleButton::with_label("Clustering (Grouping)");
     classification_tgl.set_group(Some(&clustering_tgl));
     classification_tgl.set_active(true);
+
+    // TODO: write to dotfile ...
+    let show_dialog = Rc::new(RefCell::new(true));
+    let show_dialog_clone = show_dialog.clone();
+
+    clustering_tgl.connect_toggled(move |button| {
+        if button.is_active() && *show_dialog_clone.borrow() {
+            let dialog = gtk::MessageDialog::new(
+                None::<&gtk::Window>,
+                gtk::DialogFlags::MODAL,
+                gtk::MessageType::Info,
+                gtk::ButtonsType::Ok,
+                "For clustering problems, the labels/classes will be ignored.",
+            );
+
+            dialog.set_title(Option::from("Note"));
+
+            let check_button = gtk::CheckButton::with_label("Don't show again");
+            check_button.show();
+            dialog.content_area().append(&check_button);
+
+            let show_dialog_inner_clone: Rc<RefCell<bool>> = show_dialog_clone.clone();
+
+            dialog.connect_response(move |dialog, response| {
+                if response == gtk::ResponseType::Ok && check_button.is_active() {
+                    // User doesn't want to see the info again ...
+                    *show_dialog_inner_clone.borrow_mut() = false;
+                }
+                dialog.destroy();
+            });
+
+            dialog.show();
+        }
+    });
 
     let class_cluster_tgls = gtk::Box::builder()
         .spacing(0)

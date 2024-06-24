@@ -124,7 +124,6 @@ fn select_project_ui() -> gtk::Box {
     scrolled_window.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
     scrolled_window.set_child(Some(&view));
 
-    // Create a CSS provider and load the CSS
     let provider = gtk::CssProvider::new();
     provider.load_from_data(
         "
@@ -134,24 +133,31 @@ fn select_project_ui() -> gtk::Box {
         ",
     );
 
-    // Add the CSS provider to the default screen
     gtk::style_context_add_provider_for_display(
         &gtk::gdk::Display::default().unwrap(),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION,
     );
 
-    let button = Button::with_label("open selected project");
-    // let model_clone = model.clone();
+    let open_recent_project = Button::with_label("open selected project");
 
-    button.connect_clicked(move |_| {
-        println!("hmmm ok ... {:?}", view.selection());
-        /*let selection = view.selection();
+    let view_clone = view.clone();
+    open_recent_project.connect_clicked(move |_| {
+        let selection = view_clone.selection();
         if let Some((model, iter)) = selection.selected() {
-            // model.remove(&iter);
-            // model.connect_row_deleted(iter);
-            print!("trying to delete a row");
-        }*/
+            if let Ok(value) = model.get_value(&iter, 0).get::<String>() {
+                println!("[OPEN RECENT PROJECTS] Open selected project: {}", value);
+            } else {
+                panic!("[ERROR: OPEN RECENT PROJECTS] Failed to get the string value.");
+            }
+        } else {
+            show_error_message(
+                None::<&gtk::Window>,
+                Some("WARNING"),
+                Some("No project selected.\nPlease select one of the above project form the list."),
+            );
+            println!("[OPEN RECENT PROJECTS] No row selected.");
+        }
     });
 
     // add elements to vbox
@@ -159,7 +165,7 @@ fn select_project_ui() -> gtk::Box {
     vbox.append(&title);
     vbox.append(&select_workspace_btn);
     vbox.append(&scrolled_window);
-    vbox.append(&button);
+    vbox.append(&open_recent_project);
     // vbox.set_vexpand(false);
     // vbox.set_hexpand(false);
 
@@ -316,13 +322,13 @@ fn create_new_project_ui() -> gtk::Box {
     // let model_clone = model.clone();
 
     del_selected_row.connect_clicked(move |_| {
-        println!("hmmm ok ... {:?}", view.selection());
-        /*let selection = view.selection();
+        let selection = view.selection();
         if let Some((model, iter)) = selection.selected() {
+            println!("trying to delete a row");
             // model.remove(&iter);
             // model.connect_row_deleted(iter);
-            print!("trying to delete a row");
-        }*/
+            println!("{:?}, {:?}", model, iter);
+        }
     });
 
     main_vbox.append(&scrolled_window);

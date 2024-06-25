@@ -22,6 +22,7 @@ unsafe_code = "forbid"  # { level = "forbid", priority = 0 }
 enum_glob_use = "deny"
 
 [dependencies]  # see: https://crates.io/
+# NOTE: maybe use `log` and `env_logger` instead of custom debug print
 gtk = { version = "0.8.2", package = "gtk4" }           # GUI - Rust GTK 4 bindings
 glib = "0.19.8"                                         # GUI - Rust GLib and GObject bindings
 toml = "0.8.14"                                         # parsing      .toml config files

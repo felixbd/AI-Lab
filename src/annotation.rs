@@ -8,6 +8,7 @@ pub fn annotation_ui() -> GtkBox {
     let main_box = gtk::Box::builder()
         .spacing(1)
         .orientation(gtk::Orientation::Vertical)
+        .valign(gtk::Align::Center)
         .build();
 
     main_box.append(&gtk::Label::new(Some("annotator")));

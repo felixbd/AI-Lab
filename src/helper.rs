@@ -12,6 +12,34 @@ use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::fs;
 
+// --- begin macros --------------------------------------------------------------------------------
+
+/*
+macro_rules! debug {
+    ($flag:expr, $($arg:tt)*) => {
+        if $flag {
+            println!($($arg)*);
+        }
+    };
+}
+*/
+
+/// custom macro for printing debug infos
+///
+/// change the `if true { ...` to
+/// `if false { ...` to suppress the infos and warning prints
+///
+#[macro_export]
+macro_rules! debug_println {
+    ($($arg:tt)*) => {
+        if true /* false */ {
+            println!($($arg)*);
+        }
+    };
+}
+
+// --- end macros ----------------------------------------------------------------------------------
+
 // --- begin structs -------------------------------------------------------------------------------
 
 /// Struct for representing content of dotfile for this application

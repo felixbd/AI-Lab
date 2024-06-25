@@ -4,6 +4,10 @@
 use gtk::prelude::*;
 use gtk::{Button, Dialog, Entry, Label, ResponseType};
 
+/* #[macro_use]
+mod helper; */
+use crate::debug_println;
+
 use crate::helper::{
     generate_config, load_config, save_config, show_error_message, update_dotfile,
 };
@@ -75,14 +79,14 @@ fn select_project_ui() -> gtk::Box {
         dialog.connect_response(|dialog, response| {
             if response == gtk::ResponseType::Accept {
                 if let Some(folder) = dialog.file() {
-                    println!("Selected directory: {}", folder.path().unwrap().display());
+                    debug_println!("Selected directory: {}", folder.path().unwrap().display());
                     let config = load_config(&folder.path().unwrap().display().to_string());
 
                     if let Ok(x) = config {
-                        println!("owner of config: {:?}", x.owner);
+                        debug_println!("owner of config: {:?}", x.owner);
                     } else {
                         // TODO gtk dialog popup error / info box
-                        println!("WTF, give me a correct .toml file!!! pls")
+                        debug_println!("WTF, give me a correct .toml file!!! pls")
                     }
                 }
             }
@@ -105,7 +109,7 @@ fn select_project_ui() -> gtk::Box {
     model.insert_with_values(None, &[(0, &"fuu7.toml".to_value())]);
     model.insert_with_values(None, &[(0, &"bar8.toml".to_value())]);
 
-    let view = gtk::TreeView::with_model(&model);
+    let view = gtk::TreeView::with_model(&model.clone());
 
     let read1 = gtk::CellRendererText::new();
     let col1 = gtk::TreeViewColumn::new();
@@ -142,7 +146,7 @@ fn select_project_ui() -> gtk::Box {
         let selection = view_clone.selection();
         if let Some((model, iter)) = selection.selected() {
             if let Ok(value) = model.get_value(&iter, 0).get::<String>() {
-                println!("[OPEN RECENT PROJECTS] Open selected project: {}", value);
+                debug_println!("[OPEN RECENT PROJECTS] Open selected project: {}", value);
             } else {
                 panic!("[ERROR: OPEN RECENT PROJECTS] Failed to get the string value.");
             }
@@ -152,7 +156,7 @@ fn select_project_ui() -> gtk::Box {
                 Some("WARNING"),
                 Some("No project selected.\nPlease select one of the above project form the list."),
             );
-            println!("[OPEN RECENT PROJECTS] No row selected.");
+            debug_println!("[OPEN RECENT PROJECTS] No row selected.");
         }
     });
 
@@ -162,8 +166,6 @@ fn select_project_ui() -> gtk::Box {
     vbox.append(&select_workspace_btn);
     vbox.append(&scrolled_window);
     vbox.append(&open_recent_project);
-    // vbox.set_vexpand(false);
-    // vbox.set_hexpand(false);
 
     vbox
 }
@@ -235,7 +237,6 @@ fn create_new_project_ui() -> gtk::Box {
     let _select_and_add_class_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .spacing(40)
-        // .hexpand(true)
         .build();
 
     main_vbox.append(&selection_box);
@@ -244,14 +245,10 @@ fn create_new_project_ui() -> gtk::Box {
     let model = gtk::ListStore::new(&[String::static_type()]);
 
     model.insert_with_values(None, &[(0, &"default / background".to_value())]);
-    /*model.insert_with_values(None, &[(0, &"dog".to_value())]);
+    model.insert_with_values(None, &[(0, &"dog".to_value())]);
     model.insert_with_values(None, &[(0, &"cat".to_value())]);
-    model.insert_with_values(None, &[(0, &"tree".to_value())]);
-    model.insert_with_values(None, &[(0, &"water".to_value())]);
-    model.insert_with_values(None, &[(0, &"road".to_value())]);
-    model.insert_with_values(None, &[(0, &"etc.".to_value())]);*/
 
-    let view = gtk::TreeView::with_model(&model);
+    let view = gtk::TreeView::with_model(&model.clone());
 
     let read1 = gtk::CellRendererText::new();
     let col1 = gtk::TreeViewColumn::new();
@@ -286,25 +283,28 @@ fn create_new_project_ui() -> gtk::Box {
     // let model_clone = model.clone();
 
     let view_clone = view.clone();
-    del_selected_row.connect_clicked(move |_| {
+    del_selected_row.connect_clicked(
+        gtk::glib::clone!(@strong model =>
+        move |_| {
         let selection = view_clone.selection();
-        if let Some((model, iter)) = selection.selected() {
-            if let Ok(value) = model.get_value(&iter, 0).get::<String>() {
+        if let Some((tree_model, iter)) = selection.selected() {
+            if let Ok(value) = tree_model.get_value(&iter, 0).get::<String>() {
                 if value == "default / background" {
-                    println!("[WARNING: DEL SELECTED CLASS] no you dont!!! why would anyone want to delete the background label?");
+                    debug_println!("[WARNING: DEL SELECTED CLASS] no you dont!!! why would anyone want to delete the background label?");
                 } else {
-                    println!(
+                    debug_println!(
                         "[DEL SELECTED CLASS] the following label/class will be deleted: {}",
                         value
                     );
+                    model.remove(&iter);
                 }
             } else {
                 panic!("[ERROR: DEL SELECTED CLASS] Failed to get the string value.");
             }
         } else {
-            print!("[DEL SELECTED CLASS] failed to del a class, since no class was selected!");
+            debug_println!("[DEL SELECTED CLASS] failed to del a class, since no class was selected!");
         }
-    });
+    }));
 
     let hbox = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
@@ -380,57 +380,61 @@ fn create_new_project_ui() -> gtk::Box {
     // ------------------------------------------------------------------------------------------
 
     add_class_btn.connect_clicked(move |_| {
-        // gtk::glib::clone!(@strong workspace_main_container => move |_| {
-        if !classification_tgl.is_active() {
-            show_error_message(
-                None::<&gtk::Widget>,
-                Option::from("WORKSPACE ERROR"),
-                Option::from(
-                    "Unable to add label/class, since classification is NOT selected.\n\
-                The problem has to be classification, otherwise classes/labels will be ignored.",
-                ),
-            );
-        } else {
-            // --- aks the user for a name and color for the new class / label ---
-            let dialog = Dialog::new();
-            dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
-            dialog.set_default_size(400, 200);
+            // gtk::glib::clone!(@strong workspace_main_container => move |_| {
+            if !classification_tgl.is_active() {
+                show_error_message(
+                    None::<&gtk::Widget>,
+                    Option::from("WORKSPACE ERROR"),
+                    Option::from(
+                        "Unable to add label/class, since classification is NOT selected.\n\
+                    The problem has to be classification, otherwise classes/labels will be ignored.",
+                    ),
+                );
+            } else {
+                // --- aks the user for a name and color for the new class / label ---
+                let dialog = Dialog::new();
+                dialog.set_title(Option::from("Enter Label Class Name and Select Color"));
+                dialog.set_default_size(400, 200);
 
-            let content_area = dialog.content_area();
-            let vbox = gtk::Box::new(gtk::Orientation::Vertical, 15);
+                let content_area = dialog.content_area();
+                let vbox = gtk::Box::new(gtk::Orientation::Vertical, 15);
 
-            let name_entry = Entry::new();
-            name_entry.set_placeholder_text(Some("Enter label class name"));
-            let color_button = gtk::ColorButton::new();
+                let name_entry = Entry::new();
+                name_entry.set_placeholder_text(Some("Enter label class name"));
+                let color_button = gtk::ColorButton::new();
 
-            vbox.append(&Label::new(Some("Label Class Name:")));
-            vbox.append(&name_entry);
-            vbox.append(&Label::new(Some("Select Color:")));
-            vbox.append(&color_button);
+                vbox.append(&Label::new(Some("Label Class Name:")));
+                vbox.append(&name_entry);
+                vbox.append(&Label::new(Some("Select Color:")));
+                vbox.append(&color_button);
 
-            content_area.append(&vbox);
+                content_area.append(&vbox);
 
-            dialog.add_button("Cancel", ResponseType::Cancel);
-            dialog.add_button("OK", ResponseType::Ok);
+                dialog.add_button("Cancel", ResponseType::Cancel);
+                dialog.add_button("OK", ResponseType::Ok);
 
-            // --- implementing response for adding class / label ---
-            dialog.connect_response(move |dialog, response| {
-                if response == ResponseType::Ok {
-                    let name = name_entry.text().to_string();
-                    let color = color_button.rgba();
+                // --- implementing response for adding class / label ---
+                dialog.connect_response(
+                    gtk::glib::clone!(@strong model =>
+                    move |dialog, response| {
+                    if response == ResponseType::Ok {
+                        let name = name_entry.text().to_string();
+                        let color = color_button.rgba();
 
-                    /*if !name.is_empty() {
-                        x.add_attribute(&gtk::CellRendererText::new(), "fuu", 0);
-                    }*/
-                    println!("Label Class Name: {}", name);
-                    println!("Selected Color: {:?}", color);
-                }
-                dialog.close();
-            });
+                        debug_println!("Label Class Name: {}", name);
+                        debug_println!("Selected Color: rgb({},{},{})", color.red(), color.green(), color.blue());
 
-            dialog.show();
-        }
-    });
+                        // TODO: check if name is already in the list
+                        if !name.is_empty() {
+                            model.insert_with_values(None, &[(0, &name)]);
+                        }
+                    }
+                    dialog.close();
+                }));
+
+                dialog.show();
+            }
+        });
 
     /*classification_tgl.connect_clicked(move |classification_tgl| {
         add_class_btn.set_visible(classification_tgl.is_active())
@@ -460,7 +464,7 @@ fn create_new_project_ui() -> gtk::Box {
 
         // if the filename is not empty and ends with .toml
         if config_file_name.is_empty() || !config_file_name.ends_with(".toml") {
-            println!(
+            debug_println!(
                 "[WARNING] configs not saved - no filename given: {}",
                 config_file_name
             );
@@ -478,7 +482,7 @@ fn create_new_project_ui() -> gtk::Box {
 
             // save generated config to .toml file
             save_config(&config_file_name, &workspace_configs).unwrap();
-            println!("[INFO] saved config to file: {}", config_file_name);
+            debug_println!("[INFO] saved config to file: {}", config_file_name);
         }
     });
     // main_vbox.set_hexpand(true);

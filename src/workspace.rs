@@ -2,7 +2,7 @@
 // Copyright (C) 2024 - Felix Drees - GNU General Public License v3.0
 
 use gtk::prelude::*;
-use gtk::{Button, Dialog, Entry, Label, Orientation, ResponseType};
+use gtk::{Button, Dialog, Entry, Label, ResponseType};
 
 use crate::helper::{
     generate_config, load_config, save_config, show_error_message, update_dotfile,
@@ -10,8 +10,6 @@ use crate::helper::{
 
 use std::cell::RefCell;
 use std::rc::Rc;
-
-// Gtk RecentChooserDialog
 
 ///
 /// Workspace UI
@@ -74,7 +72,6 @@ fn select_project_ui() -> gtk::Box {
             ("Select", gtk::ResponseType::Accept),
         ]);
 
-        // Connect response event to handle user's selection
         dialog.connect_response(|dialog, response| {
             if response == gtk::ResponseType::Accept {
                 if let Some(folder) = dialog.file() {
@@ -92,7 +89,6 @@ fn select_project_ui() -> gtk::Box {
             dialog.close();
         });
 
-        // Show the dialog
         dialog.show();
     });
 
@@ -202,36 +198,6 @@ fn create_new_project_ui() -> gtk::Box {
     let show_dialog = Rc::new(RefCell::new(true));
     let show_dialog_clone = show_dialog.clone();
 
-    clustering_tgl.connect_toggled(move |button| {
-        if button.is_active() && *show_dialog_clone.borrow() {
-            let dialog = gtk::MessageDialog::new(
-                None::<&gtk::Window>,
-                gtk::DialogFlags::MODAL,
-                gtk::MessageType::Info,
-                gtk::ButtonsType::Ok,
-                "For clustering problems, the labels/classes will be ignored.",
-            );
-
-            dialog.set_title(Option::from("Note"));
-
-            let check_button = gtk::CheckButton::with_label("Don't show again");
-            check_button.show();
-            dialog.content_area().append(&check_button);
-
-            let show_dialog_inner_clone: Rc<RefCell<bool>> = show_dialog_clone.clone();
-
-            dialog.connect_response(move |dialog, response| {
-                if response == gtk::ResponseType::Ok && check_button.is_active() {
-                    // User doesn't want to see the info again ...
-                    *show_dialog_inner_clone.borrow_mut() = false;
-                }
-                dialog.destroy();
-            });
-
-            dialog.show();
-        }
-    });
-
     let class_cluster_tgls = gtk::Box::builder()
         .spacing(0)
         .orientation(gtk::Orientation::Horizontal)
@@ -300,7 +266,6 @@ fn create_new_project_ui() -> gtk::Box {
     scrolled_window.set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Automatic);
     scrolled_window.set_child(Some(&view));
 
-    // Create a CSS provider and load the CSS
     let provider = gtk::CssProvider::new();
     provider.load_from_data(
         "
@@ -310,7 +275,6 @@ fn create_new_project_ui() -> gtk::Box {
         ",
     );
 
-    // Add the CSS provider to the default screen
     gtk::style_context_add_provider_for_display(
         &gtk::gdk::Display::default().unwrap(),
         &provider,
@@ -321,17 +285,26 @@ fn create_new_project_ui() -> gtk::Box {
     let del_selected_row = Button::with_label("Delete Selected Row");
     // let model_clone = model.clone();
 
+    let view_clone = view.clone();
     del_selected_row.connect_clicked(move |_| {
-        let selection = view.selection();
+        let selection = view_clone.selection();
         if let Some((model, iter)) = selection.selected() {
-            println!("trying to delete a row");
-            // model.remove(&iter);
-            // model.connect_row_deleted(iter);
-            println!("{:?}, {:?}", model, iter);
+            if let Ok(value) = model.get_value(&iter, 0).get::<String>() {
+                if value == "default / background" {
+                    println!("[WARNING: DEL SELECTED CLASS] no you dont!!! why would anyone want to delete the background label?");
+                } else {
+                    println!(
+                        "[DEL SELECTED CLASS] the following label/class will be deleted: {}",
+                        value
+                    );
+                }
+            } else {
+                panic!("[ERROR: DEL SELECTED CLASS] Failed to get the string value.");
+            }
+        } else {
+            print!("[DEL SELECTED CLASS] failed to del a class, since no class was selected!");
         }
     });
-
-    main_vbox.append(&scrolled_window);
 
     let hbox = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
@@ -341,7 +314,68 @@ fn create_new_project_ui() -> gtk::Box {
     hbox.append(&add_class_btn);
     hbox.append(&del_selected_row);
 
-    main_vbox.append(&hbox);
+    let v_box_labels_with_add_del_btn = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(5)
+        .build();
+
+    v_box_labels_with_add_del_btn.append(&scrolled_window);
+    v_box_labels_with_add_del_btn.append(&hbox);
+    main_vbox.append(&v_box_labels_with_add_del_btn);
+
+    let v_box_labels_with_add_del_btn_rev = Rc::new(RefCell::new(v_box_labels_with_add_del_btn));
+
+    {
+        let v_box_clone = Rc::clone(&v_box_labels_with_add_del_btn_rev);
+
+        classification_tgl.connect_toggled(move |_button| {
+            // if button.is_active() {
+            // v_box_labels_with_add_del_btn.set_visible(true);
+            v_box_clone.borrow_mut().set_visible(true);
+            //}
+        });
+    }
+
+    {
+        let v_box_clone = Rc::clone(&v_box_labels_with_add_del_btn_rev);
+
+        clustering_tgl.connect_toggled(move |_button: &gtk::ToggleButton| {
+            /*if button.is_active()*/
+            // {
+            // v_box_labels_with_add_del_btn.set_visible(false);
+            v_box_clone.borrow_mut().set_visible(false);
+
+            if *show_dialog_clone.borrow()
+            /* && false */
+            {
+                let dialog = gtk::MessageDialog::new(
+                    None::<&gtk::Window>,
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Info,
+                    gtk::ButtonsType::Ok,
+                    "For clustering problems, the labels/classes will be ignored.",
+                );
+
+                dialog.set_title(Option::from("Note"));
+
+                let check_button = gtk::CheckButton::with_label("Don't show again");
+                check_button.show();
+                dialog.content_area().append(&check_button);
+
+                let show_dialog_inner_clone: Rc<RefCell<bool>> = show_dialog_clone.clone();
+
+                dialog.connect_response(move |dialog, response| {
+                    if response == gtk::ResponseType::Ok && check_button.is_active() {
+                        // User doesn't want to see the info again ...
+                        *show_dialog_inner_clone.borrow_mut() = false;
+                    }
+                    dialog.destroy();
+                });
+
+                dialog.show();
+            } //}
+        });
+    }
 
     // ------------------------------------------------------------------------------------------
 
@@ -363,7 +397,7 @@ fn create_new_project_ui() -> gtk::Box {
             dialog.set_default_size(400, 200);
 
             let content_area = dialog.content_area();
-            let vbox = gtk::Box::new(Orientation::Vertical, 15);
+            let vbox = gtk::Box::new(gtk::Orientation::Vertical, 15);
 
             let name_entry = Entry::new();
             name_entry.set_placeholder_text(Some("Enter label class name"));
@@ -402,8 +436,6 @@ fn create_new_project_ui() -> gtk::Box {
         add_class_btn.set_visible(classification_tgl.is_active())
     });*/
 
-    main_vbox.append(&Label::new(Some("Save config to .toml file:")));
-
     let save_config_box = gtk::Box::builder()
         .orientation(gtk::Orientation::Horizontal)
         .spacing(5)
@@ -413,6 +445,7 @@ fn create_new_project_ui() -> gtk::Box {
 
     let save_btn = Button::with_label("save");
 
+    save_config_box.append(&Label::new(Some("Save configuration:")));
     save_config_box.append(&config_filename_entry);
     save_config_box.append(&save_btn);
     main_vbox.append(&save_config_box);
